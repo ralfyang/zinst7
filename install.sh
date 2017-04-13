@@ -1,5 +1,6 @@
 #!/bin/bash
 BaseIP=`ip a s eth0 |grep "inet " | awk '{print $2}' | awk -F'/' '{print $1}'`
+sudo rm /usr/bin/zinst
 sudo cp ./zinst /usr/bin/zinst
 sudo zinst self-config ip=$BaseIP host=$BaseIP dir=/data
 sudo rm -Rf ./RootDirectorY
