@@ -39,8 +39,8 @@ OS_Checker(){
 					OS_name="Ubuntu"
 				elif [[ $(cat /etc/lsb-release 2> /dev/null | head -1 |grep LinuxMint) != "" ]];then
 					OS_name="Ubuntu"
-				elif [[ $(cat /etc/*-release 2> /dev/null | head -1 |grep "CentOS") != "" ]] || [[ $(cat /etc/*-release 2> /dev/null | head -1 |grep "RHEL") != "" ]]  ;then
-					if [[ `(grep "CentOS" /etc/*-release 2> /dev/null |grep "[0-9]"  | awk -F":" '{print $2}'| head -1 |sed -e 's/[ a-zA-Z()/-]//g' |grep "^7")` ]];then
+				elif [[ $(cat /etc/redhat-release 2> /dev/null | head -1 |grep "CentOS") != "" ]] || [[ $(cat /etc/redhat-release 2> /dev/null | head -1 |grep "Red Hat") != "" ]]  ;then
+                                        if [[ `(grep "CentOS" /etc/redhat-release 2> /dev/null |grep "[0-9]" | sed -e 's/[ a-zA-Z()]//g' |grep "^7")` ]] || [[ `(grep "Red Hat" /etc/redhat-release 2> /dev/null |grep "[0-9]" | sed -e 's/[ a-zA-Z()]//g' |grep "^7")` ]] ;then
 						OS_name="RHEL7"
 					else
 						OS_name="RHEL"
