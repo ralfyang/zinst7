@@ -1,0 +1,6 @@
+### Base information
+ManagerIP="192.200.10.11"
+Dist_server="http://pkg.dist.com"
+ZinstBaseRoot="/data"
+ZinstDIRs="$ZinstBaseRoot/zinst"
+ZinstSourceDir="$ZinstBaseRoot/vault/Source"
