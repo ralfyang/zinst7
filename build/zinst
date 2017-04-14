@@ -396,12 +396,7 @@ Parse_Checker=$*
 
 
 PrintCheck(){
-Parse_Result=$@
-	PkgCheckTime=`echo "$PkgCheckArry" |grep " $Parse_Result"`
-	if [[ $PkgCheckTime = "" ]];then
-		PkgCheckArry="$PkgCheckArry $Parse_Result"
-		printf "%-59s %-1s %-10s %-1s\n" "| $Parse_Result" "|" "- Checked " " |"
-	fi
+	source ./PrintCheck
 }
 
 
