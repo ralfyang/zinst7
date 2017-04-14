@@ -1,0 +1,33 @@
+#!/bin/bash
+ComPkg=($@)
+
+
+
+        ## Requires check
+        Ccount=0
+        while [ $Ccount -lt ${#ComPkg[@]} ];do
+                if [[ `(which ${ComPkg[$Ccount]} | awk '{print $1}' | fgrep -v "." 2> $zinst_log)` = "" ]];then
+                        ReqPkg[$Ccount]=${ComPkg[$Ccount]}
+                fi
+        let Ccount=$Ccount+1
+        done
+
+        if [[ ${ReqPkg[@]} != "" ]];then
+                echo "$BARR"
+                echo " You need to install the \"${ReqPkg[@]}\" command. Let's try to install that package..."
+                echo "$BARR"
+                        case $OS_name in
+                                RHEL)
+                                        $sudo_base yum install ${ReqPkg[@]} -y ;;
+                                Ubuntu)
+                                        $sudo_base apt-get install ${ReqPkg[@]} -y ;;
+                        esac
+
+                        if [[ `(which ${ReqPkg[@]} | awk '{print $1}' | fgrep -v "." 2> $zinst_log)` = "" ]];then
+                                echo "$BARR"
+                                        echo " You need to install the ${ReqPkg[@]} command!!"
+                                echo "$BARR"
+                                exit 0
+                        fi
+        fi
+
