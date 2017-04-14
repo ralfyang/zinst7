@@ -166,18 +166,7 @@ Check_Multi_pass=`echo "$PackageAll" |grep " \-pass"`
 	fi
 
 Pass_Checker() {
-	if [[ $Check_Multi_pw != "OK" ]]; then
-		:
-	else
-		echo " Please insert a password for a work to the destination "
-		read -s Zinst_PASSWD
-			if [[ $Zinst_PASSWD = "" ]]
-			then
-				Comm_sshpass="sshpass -p \"$Zinst_PASSWD\""
-			else
-				Comm_sshpass="sshpass -p $Zinst_PASSWD"
-			fi
-	fi
+source ./Pass_Checker
 }
 
 Daemon_list(){
