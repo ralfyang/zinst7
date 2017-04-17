@@ -1,0 +1,27 @@
+#!/bin/bash
+### Save a restore file 
+Save_File_num=`ls $Save_Dir/ |egrep ^$Save_Filename | awk '{print NR}' |tail -1`
+    if [[ $Save_File_num = ""  ]];
+    then
+        Save_File_num="0"
+    fi
+MakeANum=1
+let MakeANum=MakeANum+$Save_File_num
+Naming="$Save_Filename.$MakeANum"
+
+echo "# --- Last touched by $WhoStamps --- " > $Save_Dir/$Naming
+echo "# --- Last command \" zinst $PackageAll \" " >> $Save_Dir/$Naming
+echo "# Date: `date +%Y.%m.%d_%T` " >> $Save_Dir/$Naming
+echo "#"  >> $Save_Dir/$Naming
+echo "# zinst package installer all-configuration backup-list for the package restore" >> $Save_Dir/$Naming
+zinst ls | awk '{print "Package install",$4".zinst"}' >> $Save_Dir/$Naming
+echo "- - - " >> $Save_Dir/$Naming
+zinst set | awk 'NR>1{print "Package setting",$1}' >> $Save_Dir/$Naming
+    if [[ $Save_File_num != "0"  ]];
+    then
+		CheckSameSave=`diff $Save_Dir/$Save_Filename.$Save_File_num  $Save_Dir/$Naming 2> $zinst_log`
+			if [[ $CheckSameSave = "" ]]
+			then
+				$sudo_base rm -f $Save_Dir/$Naming
+			fi
+	fi
