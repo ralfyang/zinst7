@@ -1,4 +1,0 @@
-#!/bin/bash
-	stty echo 
-	echo " - Command has been canceled -"
-	exit 1
