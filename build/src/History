@@ -1,0 +1,6 @@
+#!/bin/bash
+		if [[ $ZPackages != "" ]]
+		then
+				ZPackages="-$ZPackages"
+		fi
+	tail $ZPackages $History_LOG

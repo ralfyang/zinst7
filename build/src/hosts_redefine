@@ -1,0 +1,9 @@
+#/bin/bash
+
+$sudo_base cat $HostsFile > /tmp/hosts.tmp
+$sudo_base sed -i "s#/#@Q@#g" /tmp/hosts.tmp
+Rev_FetchedDistServer=`echo "$FetchedDistServer" | sed -e "s#/#@Q@#g"`
+$sudo_base sed -i "/$Rev_FetchedDistServer/d" /tmp/hosts.tmp
+$sudo_base bash -c "echo $ManagerIP $Rev_FetchedDistServer >> /tmp/hosts.tmp"
+$sudo_base sed -i "s#@Q@#/#g" /tmp/hosts.tmp
+$sudo_base bash -c "cat /tmp/hosts.tmp > $HostsFile"

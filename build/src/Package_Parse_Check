@@ -1,0 +1,43 @@
+#!/bin/bash
+### Package name check
+Parse_Checker=$*
+        ParsedPkgVerChk=`echo "$Parse_Checker" | egrep "\-[0-9.*]*.zinst\$"`
+        if [[ $ParsedPkgVerChk != "" ]]
+        then
+                ParsedPkgZinstFind=`cat $CurrPkgList | grep "^$Parse_Checker" | tail -1`
+                if [[ $ParsedPkgZinstFind = "" ]]
+                then
+                        echo "$BARR"
+                        echo "Which one is correct as you want in below list ( $Parse_Checker )"
+                        echo "$ROWW"
+                        zinst find "^$Parse_Checker-"
+                        echo "$BARR"
+                        echo ""
+                        exit 0
+                else
+                        Parse_Result="$ParsedPkgZinstFind"
+                fi
+        else
+                if [[ `(echo  "$ProcessPkg" |grep "$Parse_Checker")` = "" ]];then
+                ParsedPkgZinstFind=`cat $CurrPkgList | grep "^$Parse_Checker-" | tail -1`
+                        if [[ $ParsedPkgZinstFind = "" ]]
+                        then
+                                echo "$BARR"
+                                echo "Which one is correct as you want in below list ( $Parse_Checker )"
+                                echo "$ROWW"
+                                zinst find "^$Parse_Checker-"
+                                echo "$BARR"
+                                exit 0
+                        else
+                                Parse_Result="$ParsedPkgZinstFind"
+                        fi
+                else
+                        Parse_Result=`zinst find "^$Parse_Checker-" | tail -1`
+                        if [[ $Parse_Result = "" ]];then
+                                PkgCheckArry="$PkgCheckArry $Parse_Result"
+                                printf "%-59s %-1s %-10s %-1s\n" "| $Parse_Checker" "|" "Not existed" "|"
+                                exit 0
+                        fi
+                fi
+
+        fi

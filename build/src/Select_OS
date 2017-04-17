@@ -1,0 +1,25 @@
+#!/bin/bash
+OS_name=$1
+
+	case $OS_name in
+		RHEL )
+			CronDir=/var/spool/cron
+			Crond=crond
+			OS_type="/rhel" ;;
+		RHEL7 )
+			CronDir=/var/spool/cron
+			Crond=crond
+			OS_type="/rhel7" ;;
+		Ubuntu )
+			CronDir=/var/spool/cron/crontabs
+			Crond=cron
+			OS_type="/ubuntu" ;;
+		OSX )
+			CronDir=/var/spool/cron
+			Crond=crond
+			OS_type="/osx" ;;
+		freeBSD )
+			CronDir=/var/spool/cron
+			Crond=crond
+			OS_type="/freebsd" ;;
+	esac

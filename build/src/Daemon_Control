@@ -1,0 +1,80 @@
+#!/bin/bash
+ProcessPkg=($ZPackages)
+ProcessPkgNum=${#ProcessPkg[@]}
+ServiceCMD=`which service`
+	case $OS_name in
+		RHEL)
+			ServiceDaemonDir=`$sudo_base cat $ServiceCMD | grep "SERVICEDIR=" | awk -F '=' '{print $2}' | sed -e 's/"//g'`;;
+		Ubuntu)
+			ServiceDaemonDir=`$sudo_base cat $ServiceCMD | grep "SERVICEDIR=" | awk -F '=' '{print $2}' | sed -e 's/"//g'`;;
+		*)
+			echo " --- We are not support on this OS ---" 
+			exit 0;;
+	esac
+
+Counter=0
+Command_p="# Daemon $CommandX"
+echo -e "`date +%Y.%m.%d_%T`\t $WhoStamps : $Command_p - ${ProcessPkg[@]}  " >> $History_LOG
+ColorGreen="32"
+ColorRed="31"
+ColorDark="30"
+	while [[ $Counter -lt $ProcessPkgNum ]]
+	do
+		DaemonC=`echo "${ProcessPkg[$Counter]}"`
+		export LANG=C
+			if [[ $CommandX = "run" ]];then
+				#$sudo_base $ServiceDaemonDir/$DaemonC $CommandX
+				$sudo_base service $DaemonC $CommandX
+			else
+				#$sudo_base service $DaemonC $CommandX | tee $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
+				$sudo_base service $DaemonC $CommandX &> $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
+				$sudo_base chmod 664 $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
+				$sudo_base chgrp wheel $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
+				$sudo_base cat $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
+			fi
+		DaemLog=`$sudo_base cat $ZinstBaseRoot/vault/Source/Daemon_ctrl.log |tail -1`
+		Daemon_S=$DaemLog
+			FailCheck=`echo $DaemLog | grep "FAILED"`
+			if [[ $FailCheck != "" ]];then
+				Daemon_S=`printf "[\033[%dm%s\033[0m]\n" $ColorRed "FAILED"`
+			fi
+			SuccCheck=`echo $DaemLog | grep "OK"`
+			if [[ $SuccCheck != "" ]];then
+				Daemon_S=`printf "[\033[%dm%s\033[0m]\n" $ColorGreen " OK "`
+			fi
+			NorCheck=`echo $DaemLog | grep -v "OK|FAILED"`
+			if [[ $NorCheck != "" ]];then
+				:
+			fi
+			DaemLog=$Daemon_S
+		## Replaced by tee              $sudo_base cat $ZinstBaseRoot/vault/Source/Daemon_ctrl.log 2> /dev/null
+
+		## Checking the daemon
+		sleep 1
+		Status_D=`echo $DaemonC | sed -e 's/d$//g'`
+		DaemonPSChk=`ps aux |grep "$Status_D" | egrep -v " grep" | egrep -v "zinst " |egrep -v " vi"`
+			if [[ $DaemonPSChk != "" ]];then
+				TextColor=$ColorGreen
+				Daemon_Status="Working"
+				## Daemon check result output
+				DaemonResult=`printf "\033[%dm%s\033[0m\n" $TextColor "$Daemon_Status";`
+				Command_Result=`echo "Daemon $DaemonResult: $DaemLog "`
+			else
+				TextColor=$ColorDark
+				Daemon_Status="Not working"
+				## Daemon check result output
+				DaemonResult=`printf "\033[%dm%s\033[0m\n" $TextColor "$Daemon_Status";`
+				Command_Result=`echo "Daemon $DaemonResult: $DaemLog"`
+				#Command_Result=`echo "$DaemLog"`
+			fi
+
+		DaemonCheck=`echo $DaemLog | grep "unrecognized"`
+			if [[ $DaemonCheck != "" ]]
+			then
+				echo "$DaemonC is unrecognized service"
+				exit 0;
+			fi
+		echo -e "\t\t\t $WhoStamps : #     - $Command_Result " >> $History_LOG
+		let Counter=Counter+1
+        $sudo_base rm -f $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
+	done

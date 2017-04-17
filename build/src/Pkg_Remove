@@ -1,0 +1,74 @@
+#!/bin/bash
+ProcessPkg=($ZPackages)
+	if [[ $ZPackages = "" ]]
+	then
+		echo "=============== Please insert a package name as you need to see ============"
+	else
+		Counter=0
+			while [[ $Counter -lt $ProcessPkgNum ]]
+			do
+				Pkg_list=${ProcessPkg[$Counter]}
+				ZinstOrgName=`echo $Pkg_list| awk -F "-" '{print $1}'`
+				Package_rc=`ls $ZinstDIRs |egrep "^$ZinstOrgName$"`
+					if [[ $ZinstOrgName != $Package_rc ]]
+					then
+						echo "  "
+						echo "  $ZPackages Package has not found."
+						echo "  "
+						exit;
+					fi
+				RmResult=`$sudo_base cat $ZinstDIRs/$ZinstOrgName/.file.list |grep ^echo | awk '{print $2}'`
+					if  [[ $RmResult != "" ]]; 
+					then
+						cd $ZinstDIRs/$ZinstOrgName
+						RmTargetCron=`$sudo_base cat .file.list  | grep "\####" | awk '{print $2}'`
+						RmPkg_list=`$sudo_base cat .file.list |grep " package install " |awk '{print $3}'`
+
+							if [[ $ZOptions != "-force" ]]
+							then
+							RmDepChecker=`$sudo_base cat $ZinstBaseRoot/vault/zinst/.dependency.list | grep "^$ZinstOrgName " |awk '{print $9}' `
+								if [[ $RmDepChecker != "" ]]
+								then
+									echo "===== You have to remove as below package(s) ===== "
+									echo "$RmDepChecker"
+									echo "================================================== "
+									echo "= $ZinstOrgName has a dependency with that. = "
+									exit 0;
+								fi
+							fi
+						$sudo_base sed -i "/ $ZinstOrgName /d" $ZinstBaseRoot/vault/zinst/.dependency.list
+							if [ -f $ZinstDIRs/$ZinstOrgName/uninstall.sh ]; then
+								$sudo_base bash $ZinstDIRs/$ZinstOrgName/uninstall.sh
+							fi
+						`$sudo_base cat $ZinstDIRs/$ZinstOrgName/.file.list  | grep "^cp" | awk '{print "sudo rm -Rfv",$3}' > /tmp/removelist`
+						RmMv=`$sudo_base cat $ZinstDIRs/$ZinstOrgName/.file.list |grep "^mv"  | awk '{print $2}' | awk -F '/' '{print $NF}'`
+						`$sudo_base cat $ZinstDIRs/$ZinstOrgName/.file.list  | grep "^mv" | awk '{print "sudo rm -Rfv",$3"$RmMv"}' >> /tmp/removelist`
+						`$sudo_base cat $ZinstDIRs/$ZinstOrgName/.file.list  | grep "^ln" | awk '{print "sudo rm -Rfv",$4}' >> /tmp/removelist`
+						$sudo_base bash /tmp/removelist; sudo rm /tmp/removelist
+						RmDir=`$sudo_base cat $ZinstDIRs/$ZinstOrgName/.file.list  | grep "^mkdir" |awk '{print "ls", $3}'`
+							if [[ $RmDir = "" ]];
+							then
+								`$sudo_base cat $ZinstDIRs/$ZinstOrgName/.file.list  | grep "^mkdir" |awk '{print "rmdir", $3}'`
+							fi
+						RmZinstName=`ls $ZinstBaseRoot/vault/Source/ |grep $Pkg_list`
+						$sudo_base rm -Rfv $ZinstDIRs/$ZinstOrgName
+						$sudo_base rm -Rfv $ZinstBaseRoot/vault/Source/$RmPkg_list
+ 						echo "########## $RmPkg_list package has been removed ######## "
+						$sudo_base sed -i "/^$ZinstOrgName/d" $ZinstBaseRoot/vault/zinst/zinst_set.list
+							if [[ $RmTargetCron != "" ]]
+							then
+								$sudo_base sed -i "/#$ZinstOrgName/d" $RmTargetCron
+							fi
+					else
+						echo "============= $ZPackages package has not installed =================="
+					fi
+				### Remove action stamps to Dist
+				$sudo_base curl -e --url $Dist_URL/remove:$RmPkg_list.zinst > $zinst_log  2>&1
+
+				Command_p="- Remove "
+				echo -e "`date +%Y.%m.%d_%T`\t $WhoStamps : $Command_p - $RmPkg_list  " >> $History_LOG
+				let Counter=Counter+1
+			done
+	fi
+cd $ZinstDIRs
+Save_Restore_file $*
