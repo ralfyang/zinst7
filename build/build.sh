@@ -1,10 +1,10 @@
 #!/bin/bash
 
 src_org="./main"
-target_file="./zinst"
+target_file="../zinst"
 endline=`wc -l $src_org| awk '{print $1}'`
 count=1
-	rm -f zinst;touch zinst
+	rm -f $target_file;touch $target_file
 	while [[ $count -le $endline ]];do	
 		if [[ `(echo $(head  -$count $src_org  | tail -n 1 |egrep 'source \.\/src'))` != "" ]];then
 			Exec=`echo $(head  -$count $src_org  | tail -n 1 | sed -e 's/source /cat /g')`

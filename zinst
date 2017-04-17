@@ -33,29 +33,36 @@ zinst_log="/dev/null"
 #Sara_Host=""
 
 OS_Checker(){
-		## OS Check
-		if [[ $(uname) == Linux ]];then
-				if [[ $(cat /etc/*-release 2> /dev/null | head -1 |grep Ubuntu) != "" ]];then
-					OS_name="Ubuntu"
-				elif [[ $(cat /etc/lsb-release 2> /dev/null | head -1 |grep LinuxMint) != "" ]];then
-					OS_name="Ubuntu"
-				elif [[ $(cat /etc/redhat-release 2> /dev/null | head -1 |grep "CentOS") != "" ]] || [[ $(cat /etc/redhat-release 2> /dev/null | head -1 |grep "Red Hat") != "" ]]  ;then
+
+                ## OS Check
+                if [[ $(uname) == Linux ]];then
+                                if [[ $(cat /etc/*-release 2> /dev/null | head -1 |grep Ubuntu) != "" ]];then
+                                        OS_name="Ubuntu"
+                                elif [[ $(cat /etc/lsb-release 2> /dev/null | head -1 |grep LinuxMint) != "" ]];then
+                                        OS_name="Ubuntu"
+                                elif [[ $(cat /etc/redhat-release 2> /dev/null | head -1 |grep "CentOS") != "" ]] || [[ $(cat /etc/redhat-release 2> /dev/null | head -1 |grep "Red Hat") != "" ]]  ;then
                                         if [[ `(grep "CentOS" /etc/redhat-release 2> /dev/null |grep "[0-9]" | sed -e 's/[ a-zA-Z()]//g' |grep "^7")` ]] || [[ `(grep "Red Hat" /etc/redhat-release 2> /dev/null |grep "[0-9]" | sed -e 's/[ a-zA-Z()]//g' |grep "^7")` ]] ;then
-						OS_name="RHEL7"
-					else
-						OS_name="RHEL"
-					fi
-				elif [[ $(cat /etc/*-release 2> /dev/null |grep "rhel") != "" ]]  ;then
-					OS_name="RHEL"
-				fi
-		elif [[ $(uname) == Darwin ]];then
-			OS_name="OSX"
-		else
-			OS_name="freeBSD"
-		fi
+                                                OS_name="RHEL7"
+                                        else
+                                                OS_name="RHEL"
+                                        fi
+                                elif [[ $(cat /etc/*-release 2> /dev/null |grep "rhel") != "" ]]  ;then
+                                        OS_name="RHEL"
+                                fi
+                elif [[ $(uname) == Darwin ]];then
+                        OS_name="OSX"
+                else
+                        OS_name="freeBSD"
+                fi
+
 }
 
 OS_Checker
+
+
+Select_OS(){
+OS_name=$1
+
 	case $OS_name in
 		RHEL )
 			CronDir=/var/spool/cron
@@ -78,45 +85,51 @@ OS_Checker
 			Crond=crond
 			OS_type="/freebsd" ;;
 	esac
+}
+Select_OS $OS_name
 
+# receive the OS type to URL
 Dist_URL="$Dist_server$OS_type"
+
 
 Requires_Pkg_install(){
 ComPkg=($@)
 
-	
 
-	## Requires check
-	Ccount=0
-	while [ $Ccount -lt ${#ComPkg[@]} ];do
-		if [[ `(which ${ComPkg[$Ccount]} | awk '{print $1}' | fgrep -v "." 2> $zinst_log)` = "" ]];then
-			ReqPkg[$Ccount]=${ComPkg[$Ccount]}
-		fi
-	let Ccount=$Ccount+1
-	done
 
-	if [[ ${ReqPkg[@]} != "" ]];then
-		echo "$BARR"
-		echo " You need to install the \"${ReqPkg[@]}\" command. Let's try to install that package..."
-		echo "$BARR"
-			case $OS_name in
-				RHEL)
-					$sudo_base yum install ${ReqPkg[@]} -y ;;
-				Ubuntu) 
-					$sudo_base apt-get install ${ReqPkg[@]} -y ;;
-			esac
-    
-			if [[ `(which ${ReqPkg[@]} | awk '{print $1}' | fgrep -v "." 2> $zinst_log)` = "" ]];then
-				echo "$BARR"
-					echo " You need to install the ${ReqPkg[@]} command!!"
-				echo "$BARR"
-				exit 0
-			fi
-	fi
+        ## Requires check
+        Ccount=0
+        while [ $Ccount -lt ${#ComPkg[@]} ];do
+                if [[ `(which ${ComPkg[$Ccount]} | awk '{print $1}' | fgrep -v "." 2> $zinst_log)` = "" ]];then
+                        ReqPkg[$Ccount]=${ComPkg[$Ccount]}
+                fi
+        let Ccount=$Ccount+1
+        done
+
+        if [[ ${ReqPkg[@]} != "" ]];then
+                echo "$BARR"
+                echo " You need to install the \"${ReqPkg[@]}\" command. Let's try to install that package..."
+                echo "$BARR"
+                        case $OS_name in
+                                RHEL)
+                                        $sudo_base yum install ${ReqPkg[@]} -y ;;
+                                Ubuntu)
+                                        $sudo_base apt-get install ${ReqPkg[@]} -y ;;
+                        esac
+
+                        if [[ `(which ${ReqPkg[@]} | awk '{print $1}' | fgrep -v "." 2> $zinst_log)` = "" ]];then
+                                echo "$BARR"
+                                        echo " You need to install the ${ReqPkg[@]} command!!"
+                                echo "$BARR"
+                                exit 0
+                        fi
+        fi
+
 }
 
 
-
+Check_command_install(){
+OS_name=$1
 ## chech which command & install
 check_which=`which 2> /tmp/chk_req.out`
         if [[ `(grep "not found" /tmp/chk_req.out )` != ""  ]] ; then
@@ -129,14 +142,13 @@ check_which=`which 2> /tmp/chk_req.out`
 	## clear tmp file
 	rm -f  /tmp/chk_req.out
         fi
+}
 
-
-
-
+Check_command_install $OS_name
 
 ## Requires command check & install
 Requires_Pkg_install sudo
-Requires_Pkg_install tar bc
+Requires_Pkg_install tar bc 
 
 
 HostsFile="/etc/hostsa"
@@ -144,8 +156,9 @@ HostsFile="/etc/hostsa"
 		HostsFile="/etc/hosts"
 	fi
 
-
 hosts_redefine(){
+#/bin/bash
+
 $sudo_base cat $HostsFile > /tmp/hosts.tmp
 $sudo_base sed -i "s#/#@Q@#g" /tmp/hosts.tmp
 Rev_FetchedDistServer=`echo "$FetchedDistServer" | sed -e "s#/#@Q@#g"`
@@ -167,14 +180,16 @@ GrepDistHost=`grep "$FetchedDistServer" $HostsFile`
 	fi
 
 
-version_redefine ()
-{ echo "$@" | awk -F'.' '{printf("%03d%03d%03d\n", $1,$2,$3); }'; }
+version_redefine (){ 
+	echo "$@" | awk -F'.' '{printf("%03d%03d%03d\n", $1,$2,$3); }'; 
+
+}
 
 
 exit_abnormal() {
-stty echo 
-echo " - Command has been canceled -"
-exit 1
+	stty echo 
+	echo " - Command has been canceled -"
+	exit 1
 }
 
 ### Break sign catch for line break fix
@@ -215,74 +230,73 @@ Check_Multi_pass=`echo "$PackageAll" |grep " \-pass"`
 	fi
 
 Pass_Checker() {
-	if [[ $Check_Multi_pw != "OK" ]]; then
-		:
-	else
-		echo " Please insert a password for a work to the destination "
-		read -s Zinst_PASSWD
-			if [[ $Zinst_PASSWD = "" ]]
-			then
-				Comm_sshpass="sshpass -p \"$Zinst_PASSWD\""
-			else
-				Comm_sshpass="sshpass -p $Zinst_PASSWD"
-			fi
-	fi
+ if [[ $Check_Multi_pw != "OK" ]]; then
+                :
+        else
+                echo " Please insert a password for a work to the destination "
+                read -s Zinst_PASSWD
+                        if [[ $Zinst_PASSWD = "" ]]
+                        then
+                                Comm_sshpass="sshpass -p \"$Zinst_PASSWD\""
+                        else
+                                Comm_sshpass="sshpass -p $Zinst_PASSWD"
+                        fi
+        fi
 }
 
 Daemon_list(){
-package_name=$1
+## package_name is check for daemon list
 
+package_name=$1
 pstr="[==================================================================]"
 echo " Scaning..."
+        if [[ $package_name = "" ]];then
+                pkg_list=(`zinst  ls | fgrep -v "user_" | awk '{print $4}' | xargs`)
+                Print_list="/tmp/result.list"
+                echo "$BARR" > $Print_list
+                echo " [COMMAND]: \"start/stop/restart/run\" or \"on|off\" " >> $Print_list
+                echo "$Barr" >> $Print_list
+                        Count=0
+                        while [ $Count -lt ${#pkg_list[@]} ];do
+                                daemon_check=`zinst ls ${pkg_list[$Count]} -file |grep "/etc/init.d/" | awk -F "/" '{print $NF}'`
+                                if [[ $daemon_check != "" ]];then
+                                        echo ""  >> $Print_list
+                                        echo "+ ${pkg_list[$Count]}:" >> $Print_list
+                                        echo " zinst [COMMAND] $daemon_check" >> $Print_list
+                                fi
+                        let Count=$Count+1
 
-	if [[ $package_name = "" ]];then
-		pkg_list=(`zinst  ls | fgrep -v "user_" | awk '{print $4}' | xargs`)
-		Print_list="/tmp/result.list"
-    
-		echo "$BARR" > $Print_list
-		echo " [COMMAND]: \"start/stop/restart/run\" or \"on|off\" " >> $Print_list
-		echo "$Barr" >> $Print_list
-			Count=0
-			while [ $Count -lt ${#pkg_list[@]} ];do
-				daemon_check=`zinst ls ${pkg_list[$Count]} -file |grep "/etc/init.d/" | awk -F "/" '{print $NF}'`
-				if [[ $daemon_check != "" ]];then
-					echo ""  >> $Print_list
-					echo "+ ${pkg_list[$Count]}:" >> $Print_list
-					echo " zinst [COMMAND] $daemon_check" >> $Print_list
-				fi
-			let Count=$Count+1
-
-			## Part of Progress bar
-				pd=$(( $Count * 69 / ${#pkg_list[@]} ))
-				Pkg_picklist="${pkg_list[$Count]}"
-					if [[ $Pkg_picklist = "" ]];then
-						Pkg_picklist=" - Package Scan has been completed -"
-					fi
-				printf "\r%-2s %-40s %3s %3d.%1d%% %.${pd}s" '|' "$Pkg_picklist" '|' $(( $Count * 100 / ${#pkg_list[@]} )) $(( ($Count * 1000 / ${#pkg_list[@]}) % 10 )) $pstr
-			done
-		## Line bracker for Progress bar
-		echo ""
-		echo ""
-		echo "$BARR" >> $Print_list
-		cat $Print_list
-	else 
-		echo "$Barr" 
-			daemon_check=`zinst ls $package_name -file |grep "/etc/init.d/" |tail -1 | awk -F "/" '{print $NF}'`
-			if [[ $daemon_check != "" ]];then
-				echo "" 
-				echo "$Barr"
-				echo " [COMMAND]: \"start/stop/restart/run\" or \"on|off\" " 
-				echo "$BARR"
-				echo "+ $package_name:"
-				echo " zinst [COMMAND] $daemon_check"
-			else
-				echo " $package_name package has not any daemon for run !!!"
-			fi
-		echo "$Barr"
-	fi
-
+                        ## Part of Progress bar
+                                pd=$(( $Count * 69 / ${#pkg_list[@]} ))
+                                Pkg_picklist="${pkg_list[$Count]}"
+                                        if [[ $Pkg_picklist = "" ]];then
+                                                Pkg_picklist=" - Package Scan has been completed -"
+                                        fi
+                                printf "\r%-2s %-40s %3s %3d.%1d%% %.${pd}s" '|' "$Pkg_picklist" '|' $(( $Count * 100 / ${#pkg_list[@]} )) $(( ($Count * 1000 / ${#pkg_list[@]}) % 10 )) $pstr
+                        done
+                ## Line bracker for Progress bar
+                echo ""
+                echo ""
+                echo "$BARR" >> $Print_list
+                cat $Print_list
+        else
+                echo "$Barr"
+                        daemon_check=`zinst ls $package_name -file |grep "/etc/init.d/" |tail -1 | awk -F "/" '{print $NF}'`
+                        if [[ $daemon_check != "" ]];then
+                                echo ""
+                                echo "$Barr"
+                                echo " [COMMAND]: \"start/stop/restart/run\" or \"on|off\" "
+                                echo "$BARR"
+                                echo "+ $package_name:"
+                                echo " zinst [COMMAND] $daemon_check"
+                        else
+                                echo " $package_name package has not any daemon for run !!!"
+                        fi
+                echo "$Barr"
+        fi
 exit 0
 rm -f $Print_list
+
 }
 
 
@@ -462,58 +476,59 @@ $sudo_base chmod 664 $History_LOG 2> $zinst_log
 $sudo_base chgrp $zinst_group $History_LOG 2> $zinst_log
 
 Package_Parse_Check(){
-### Package name check 
+### Package name check
 Parse_Checker=$*
-	ParsedPkgVerChk=`echo "$Parse_Checker" | egrep "\-[0-9.*]*.zinst\$"`
-	if [[ $ParsedPkgVerChk != "" ]]
-	then 
-		ParsedPkgZinstFind=`cat $CurrPkgList | grep "^$Parse_Checker" | tail -1`
-		if [[ $ParsedPkgZinstFind = "" ]]
-		then
-			echo "$BARR"
-			echo "Which one is correct as you want in below list ( $Parse_Checker )"
-			echo "$ROWW"
-			zinst find "^$Parse_Checker-"
-			echo "$BARR"
-			echo ""
-			exit 0
-		else
-			Parse_Result="$ParsedPkgZinstFind"
-		fi
-	else
-		if [[ `(echo  "$ProcessPkg" |grep "$Parse_Checker")` = "" ]];then
-		ParsedPkgZinstFind=`cat $CurrPkgList | grep "^$Parse_Checker-" | tail -1`
-			if [[ $ParsedPkgZinstFind = "" ]]
-			then
-				echo "$BARR"
-				echo "Which one is correct as you want in below list ( $Parse_Checker )"
-				echo "$ROWW"
-				zinst find "^$Parse_Checker-"
-				echo "$BARR"
-				exit 0
-			else
-				Parse_Result="$ParsedPkgZinstFind"
-			fi
-		else
-			Parse_Result=`zinst find "^$Parse_Checker-" | tail -1`
-			if [[ $Parse_Result = "" ]];then
-				PkgCheckArry="$PkgCheckArry $Parse_Result"
-				printf "%-59s %-1s %-10s %-1s\n" "| $Parse_Checker" "|" "Not existed" "|"
-				exit 0
-			fi
-		fi
-	
-	fi
+        ParsedPkgVerChk=`echo "$Parse_Checker" | egrep "\-[0-9.*]*.zinst\$"`
+        if [[ $ParsedPkgVerChk != "" ]]
+        then
+                ParsedPkgZinstFind=`cat $CurrPkgList | grep "^$Parse_Checker" | tail -1`
+                if [[ $ParsedPkgZinstFind = "" ]]
+                then
+                        echo "$BARR"
+                        echo "Which one is correct as you want in below list ( $Parse_Checker )"
+                        echo "$ROWW"
+                        zinst find "^$Parse_Checker-"
+                        echo "$BARR"
+                        echo ""
+                        exit 0
+                else
+                        Parse_Result="$ParsedPkgZinstFind"
+                fi
+        else
+                if [[ `(echo  "$ProcessPkg" |grep "$Parse_Checker")` = "" ]];then
+                ParsedPkgZinstFind=`cat $CurrPkgList | grep "^$Parse_Checker-" | tail -1`
+                        if [[ $ParsedPkgZinstFind = "" ]]
+                        then
+                                echo "$BARR"
+                                echo "Which one is correct as you want in below list ( $Parse_Checker )"
+                                echo "$ROWW"
+                                zinst find "^$Parse_Checker-"
+                                echo "$BARR"
+                                exit 0
+                        else
+                                Parse_Result="$ParsedPkgZinstFind"
+                        fi
+                else
+                        Parse_Result=`zinst find "^$Parse_Checker-" | tail -1`
+                        if [[ $Parse_Result = "" ]];then
+                                PkgCheckArry="$PkgCheckArry $Parse_Result"
+                                printf "%-59s %-1s %-10s %-1s\n" "| $Parse_Checker" "|" "Not existed" "|"
+                                exit 0
+                        fi
+                fi
+
+        fi
 }
 
 
 PrintCheck(){
+
 Parse_Result=$@
-	PkgCheckTime=`echo "$PkgCheckArry" |grep " $Parse_Result"`
-	if [[ $PkgCheckTime = "" ]];then
-		PkgCheckArry="$PkgCheckArry $Parse_Result"
-		printf "%-59s %-1s %-10s %-1s\n" "| $Parse_Result" "|" "- Checked " " |"
-	fi
+        PkgCheckTime=`echo "$PkgCheckArry" |grep " $Parse_Result"`
+        if [[ $PkgCheckTime = "" ]];then
+                PkgCheckArry="$PkgCheckArry $Parse_Result"
+                printf "%-59s %-1s %-10s %-1s\n" "| $Parse_Result" "|" "- Checked " " |"
+        fi
 }
 
 
@@ -650,7 +665,6 @@ RotaBeacon=0
 			do
 				HostF=$WhoStamp@${HostChanged[$Count]}
 				## ssh connection check
-#				sed -i "/$TartgetHost/d" ~/.ssh/known_hosts 2> $zinst_log
 				$Comm_sshpass ssh -oStrictHostKeyChecking=no $HostF "grep ^VERSION /usr/bin/zinst" > $ZinstBaseRoot/vault/Source/ssh_conn_test.log 2>&1
 				CheckConnection=`$sudo_base cat $ZinstBaseRoot/vault/Source/ssh_conn_test.log |grep "No route\|not known\|Connection refused"`
 					if [[ $CheckConnection != "" ]]
@@ -684,8 +698,7 @@ RotaBeacon=0
 						CheckDesDIR=`$sudo_base grep " cannot access " $ZinstBaseRoot/vault/Source/ssh_conn_test.log`
 							if [[ $CommandX != "" ]]
 							then		
-#								sed -i "/$TartgetHost/d" ~/.ssh/known_hosts 2> $zinst_log
-        						$Comm_sshpass ssh -oStrictHostKeyChecking=no -t $HostF "$sudo_base mkdir -p $ZinstBaseRoot/vault/Source;sudo chgrp -R $zinst_group $ZinstBaseRoot/vault" 2> $zinst_log
+	        						$Comm_sshpass ssh -oStrictHostKeyChecking=no -t $HostF "$sudo_base mkdir -p $ZinstBaseRoot/vault/Source;sudo chgrp -R $zinst_group $ZinstBaseRoot/vault" 2> $zinst_log
 							fi
 
         					echo ""
@@ -724,7 +737,6 @@ RotaBeacon=0
 						MultiCheck=`echo $ZOptions |grep -e "-multi"`
 							if [[ $MultiCheck = "" ]]
 							then
-#								sed -i "/$TartgetHost/d" ~/.ssh/known_hosts 2> $zinst_log
 								$Comm_sshpass ssh -oStrictHostKeyChecking=no -t $HostF "echo [ :: $HostF :: ];cd $ZinstSourceDir; source /etc/profile ;$szinst $RotaCommand" 2> $zinst_log
 								IPaddr=`/sbin/ifconfig |grep " addr:" |grep Bcast |head -1 | awk '{print $2}'|awk  -F ':' '{print $2}'`
 									if [[ $szinst = "" ]];then
@@ -733,11 +745,8 @@ RotaBeacon=0
 										DestStamp=" L"
 									fi
 
-#								sed -i "/$TartgetHost/d" ~/.ssh/known_hosts 2> $zinst_log
  							    $Comm_sshpass ssh -oStrictHostKeyChecking=no -t $HostF "echo -e \"`date +%Y.%m.%d_%T`\t $WhoStamps : $DestStamp From $IPaddr: $szinst $RotaCommand\" >> $History_LOG" 
 							else
-								### For multi-task
-#								sed -i "/$TartgetHost/d" ~/.ssh/known_hosts 2> $zinst_log
 								$Comm_sshpass ssh -oStrictHostKeyChecking=no -t $HostF "echo [ :: $HostF :: ];cd $ZinstSourceDir; source /etc/profile ;$szinst $RotaCommand" & 
 							fi
 
@@ -928,7 +937,6 @@ rm -f $CurrPkgList $CurrPkgDiR 2> $zinst_log
 rm -f $StockPkg
 
 AllPkgSortedResult="${BoxPkgArry[@]}"
-
 }
 
 #########################################################################################
@@ -978,6 +986,7 @@ zinst set | awk 'NR>1{print "Package setting",$1}' >> $Save_Dir/$Naming
 			fi
 	fi
 }
+
 Pkg_Install(){
 	CounterAll=1
 	while [[ $CounterAll -le $ProcessPkgNum ]]
@@ -1504,7 +1513,6 @@ CheckSetNum=${#CheckSetArry[@]}
 			done
 						Save_Restore_file $*
 	fi
-
 }
 
 Pkg_Remove(){
@@ -1584,6 +1592,7 @@ Save_Restore_file $*
 }
 
 Pkg_List(){
+
 ### Check file of the phrase
 Pkg_file_checker=`echo $ZPackages |grep "/"`
 CurrentCheck=`echo $ZPackages |grep "^./"`
@@ -1695,9 +1704,7 @@ CurrentCheck=`echo $ZPackages |grep "^./"`
 }
 
 Pkg_Find(){
-
 Repo_chk=`$sudo_base curl -e --url $Dist_URL/ 2> $zinst_log | grep ".zinst"`
-
 Sort_version='--version-sort'
 ## sort option check
 echo ""| sort $Sort_version 1>&2 > /tmp/sort_check.out
@@ -1734,7 +1741,6 @@ echo ""| sort $Sort_version 1>&2 > /tmp/sort_check.out
 				fi
 			fi
 	fi
-
 }
 
 Cront_Command(){
@@ -1831,6 +1837,7 @@ echo -e "`date +%Y.%m.%d_%T`\t $WhoStamps : $Command_p - $ZPackages" >> $History
 }
 
 Pkg_Sync(){
+
 ## Define root DIR of zinst
 BaseRoot=$ZinstBaseRoot 
 Types=$ZOptions
@@ -1899,9 +1906,6 @@ Sync_File=$ZPackages
 				exit 0;
 			fi
 	fi
-
-version_redefine ()
-{ echo "$@" | awk -F'.' '{printf("%03d%03d%03d\n", $1,$2,$3); }'; }
 
 ## Define the file Dir & name
 Origin_zsave=$ZPackages
@@ -2016,7 +2020,6 @@ Command_p="=  Sync   "
 		fi
 	fi
 rm -f $Sorted_org_zsave $Sorted_tgt_zsave $tmp_results $remove_zsave_list $install_zsave_list $Target_zsave_full
-
 }
 
 Daemon_Control(){
@@ -2168,11 +2171,9 @@ SelfConfArry=(`echo "$PackageAll"`)
 #Apply the configuration for HostsFile
 #hosts_redefine 
 zinst -v 1> $zinst_log
-
 }
 
 Zinst_Selfupdate(){
-#cd ~/;
 cd /tmp;
 $sudo_base bash -c "curl -e --url $Dist_server > /tmp/dist_check.tmp 2>&1"
 check_dist_url=`grep "couldn't connect" /tmp/dist_check.tmp`
@@ -2214,7 +2215,6 @@ echo "Zinst version" $ShowVersion
 
 Command_p="@ Self-update"
 echo -e "`date +%Y.%m.%d_%T`\t $WhoStamps : $Command_p - $ShowVersion  " >> $History_LOG
-
 } 
 
 Help_Command(){
@@ -2282,7 +2282,6 @@ echo "                                                                          
 echo " "
 ### Hidden function for Multi-tasking on multiful host -multi option
 ### But it's not stable on some function
-
 }
 
 Help_Detail(){
@@ -2433,24 +2432,19 @@ echo " "
 echo "=== For more detail: https://github.com/goody80/Ralf_Dev ===" 
 echo " "
 echo " "
-
 }
-
-
-
-
 
 
 History(){
-	if [[ $ZPackages != "" ]]
-	then
-			ZPackages="-$ZPackages"
-	fi
-
-tail $ZPackages $History_LOG
+		if [[ $ZPackages != "" ]]
+		then
+				ZPackages="-$ZPackages"
+		fi
+	tail $ZPackages $History_LOG
 }
 
 Pkg_Track(){
+
 TrackManager="track_$ManagerIP"
 ### Set for Print screen
 
@@ -2525,16 +2519,15 @@ Add_Virtual(){
 		check_vminit
 
 }
+
 Up_Virtual(){
 		check_vminit
 		$sudo_base virsh start $vm_imagename
-
 }
 
 Halt_Virtual(){
 		check_vminit
 		$sudo_base virsh shutdown $vm_imagename
-
 }
 
 Destroy_Virtual(){
@@ -2542,17 +2535,13 @@ Destroy_Virtual(){
 		$sudo_base virsh destroy $vm_imagename
 		$sudo_base virsh undefine $vm_imagename
 		$sudo_base rm -f #$vm_dir $vm_imagename.qcow2
-
 }
 
 
 Vmlist_Virtual(){
 		check_vminit
 		$sudo_base virsh list all
-
 }
-
-
 
 
 Pkg_Getset(){
@@ -2560,30 +2549,30 @@ Pkg_Getset(){
 GetSPkg=$ZPackages
 GetSPkgArry=( $GetSPkg )
 sudo mkdir -p $CurrPkgDiR
-	### Package list up
-	### Loop for each package sort
-	GetSCounter=0
-	while [ $GetSCounter -lt ${#GetSPkgArry[@]} ]
-	do
-			IndexFileChk=`ls $CurrPkgDiR/${GetSPkgArry[$GetSCounter]}.zicf 2> $zinst_log`
-			PackageReal=`echo "${GetSPkgArry[$GetSCounter]}" | awk -F'-' '{print $1}'`
-			if [[ $IndexFileChk = "" ]]
-			then
-				$sudo_base bash -c "curl \"$Dist_URL/checker/${GetSPkgArry[$GetSCounter]}.zicf\" 2> $zinst_log > $CurrPkgDiR/${GetSPkgArry[$GetSCounter]}.zicf"
-				CheckSet=(`cat $CurrPkgDiR/${GetSPkgArry[$GetSCounter]}.zicf 2> $zinst_log |grep "^ZINST set " | sed -e 's/ZINST set //g' | awk '{for (i=2;i<=NF;i=i+1) print "'$PackageReal'."$1"="$i}'`)
-			else
-				CheckSet=(`cat $CurrPkgDiR/${GetSPkgArry[$GetSCounter]}.zicf 2> $zinst_log |grep "^ZINST set " | sed -e 's/ZINST set //g' | awk '{for (i=2;i<=NF;i=i+1) print "'$PackageReal'."$1"="$i}'`)
-			fi
+        ### Package list up
+        ### Loop for each package sort
+        GetSCounter=0
+        while [ $GetSCounter -lt ${#GetSPkgArry[@]} ]
+        do
+                        IndexFileChk=`ls $CurrPkgDiR/${GetSPkgArry[$GetSCounter]}.zicf 2> $zinst_log`
+                        PackageReal=`echo "${GetSPkgArry[$GetSCounter]}" | awk -F'-' '{print $1}'`
+                        if [[ $IndexFileChk = "" ]]
+                        then
+                                $sudo_base bash -c "curl \"$Dist_URL/checker/${GetSPkgArry[$GetSCounter]}.zicf\" 2> $zinst_log > $CurrPkgDiR/${GetSPkgArry[$GetSCounter]}.zicf"
+                                CheckSet=(`cat $CurrPkgDiR/${GetSPkgArry[$GetSCounter]}.zicf 2> $zinst_log |grep "^ZINST set " | sed -e 's/ZINST set //g' | awk '{for (i=2;i<=NF;i=i+1) print "'$PackageReal'."$1"="$i}'`)
+                        else
+                                CheckSet=(`cat $CurrPkgDiR/${GetSPkgArry[$GetSCounter]}.zicf 2> $zinst_log |grep "^ZINST set " | sed -e 's/ZINST set //g' | awk '{for (i=2;i<=NF;i=i+1) print "'$PackageReal'."$1"="$i}'`)
+                        fi
 
-	let GetSCounter=$GetSCounter+1
-	done
+        let GetSCounter=$GetSCounter+1
+        done
 
-	### Print output
-	SetOutCount=0
-	while [ $SetOutCount -lt ${#CheckSet[@]} ]; do
-		echo ${CheckSet[$SetOutCount]}
-	let SetOutCount=$SetOutCount+1
-	done
+        ### Print output
+        SetOutCount=0
+        while [ $SetOutCount -lt ${#CheckSet[@]} ]; do
+                echo ${CheckSet[$SetOutCount]}
+        let SetOutCount=$SetOutCount+1
+        done
 }
 
 ##############################  Command menu  ###################################
@@ -2631,7 +2620,7 @@ sudo mkdir -p $CurrPkgDiR
 	track)
 		Pkg_Track $* ;;
 	daemon*)
-		Daemon_list	$2;;
+		Daemon_list $2;;
 	-v*)
 		Zinst_Version 	;;
 	*help)
