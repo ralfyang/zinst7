@@ -3,6 +3,8 @@ BARR="==========================================================================
 Barr="---------------------------------------------------------------------------------------------------"
 pstr="[==========================================]"
 
+Build ()
+{
 src_org="./main"
 target_file="../zinst"
 
@@ -16,7 +18,7 @@ endline=`wc -l $src_org| awk '{print $1}'`
 rm -f $target_file;touch $target_file
 
 ## Stamp a time for start
-beginTime=$(date +%s%N)
+#beginTime=$(date +%s%N)
 	## Start loop
 	echo "$BARR"
 	echo " Source code build..."
@@ -48,9 +50,12 @@ echo "$BARR"
 
 ## Permission change
 chmod 755 $target_file
+}
+
+time Build 
 
 ## Print time for result
-endTime=$(date +%s%N)
-elapsed=`echo "($endTime - $beginTime) / 1000000" | bc`
-elapsedSec=`echo "scale=6;$elapsed / 1000" | bc | awk '{printf "%.6f", $1}'`
-echo TOTAL: $elapsedSec sec
+#endTime=$(date +%s%N)
+#elapsed=`echo "($endTime - $beginTime) / 1000000" | bc`
+#elapsedSec=`echo "scale=6;$elapsed / 1000" | bc | awk '{printf "%.6f", $1}'`
+#echo TOTAL: $elapsedSec sec
