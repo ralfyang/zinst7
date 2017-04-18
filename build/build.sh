@@ -11,9 +11,12 @@ all_src=(`egrep 'source \.\/src' ./main | awk '{print $2}'`)
 
 ## Define Last line number
 endline=`wc -l $src_org| awk '{print $1}'`
-	## Purge the old artifact
-	rm -f $target_file;touch $target_file
 
+## Purge the old artifact
+rm -f $target_file;touch $target_file
+
+## Stamp a time for start
+beginTime=$(date +%s%N)
 	## Start loop
 	echo "$BARR"
 	echo " Building..."
@@ -46,4 +49,8 @@ echo "$BARR"
 ## Permission change
 chmod 755 $target_file
 
-
+## Print time for result
+endTime=$(date +%s%N)
+elapsed=`echo "($endTime - $beginTime) / 1000000" | bc`
+elapsedSec=`echo "scale=6;$elapsed / 1000" | bc | awk '{printf "%.6f", $1}'`
+echo TOTAL: $elapsedSec sec
