@@ -19,7 +19,7 @@ rm -f $target_file;touch $target_file
 beginTime=$(date +%s%N)
 	## Start loop
 	echo "$BARR"
-	echo " Building..."
+	echo " Source code build..."
 	echo "$Barr"
 	count=1
 	Cnt=1
@@ -30,7 +30,7 @@ beginTime=$(date +%s%N)
 			## Part of Progress bar
 			pd=$(( $Cnt * 45 / ${#all_src[@]} ))
 				if [[ $Cnt = ${#all_src[@]} ]];then
-					Pkg_picklist=" - Build has been completed -"
+					Pkg_picklist=" - Source code Build has been finished -"
 				else
 					Pkg_picklist="${all_src[$Cnt]}"
 				fi
