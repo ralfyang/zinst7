@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 $sudo_base cat $HostsFile > /tmp/hosts.tmp
 $sudo_base sed -i "s#/#@Q@#g" /tmp/hosts.tmp
