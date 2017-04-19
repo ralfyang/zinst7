@@ -26,7 +26,7 @@ rm -f $target_file;touch $target_file
 	count=1
 	Cnt=1
 	while [[ $count -le $endline ]];do	
-		if [[ `(echo $(awk "NR == $count" $src_org |egrep 'source \.\/src'))` != "" ]];then
+		if [[ `(echo $(awk "NR == $count" $src_org |egrep 'source \.\/src'))` != "" ]] || [[ `(echo $(awk "NR == $count" $src_org |egrep 'source \.\/conf'))` != "" ]] ;then
 			Exec=`echo $(awk "NR == $count" $src_org | sed -e 's/source /cat /g')`
 			$Exec |sed '/\#\!\//d'  >> $target_file
 			## Part of Progress bar
@@ -54,6 +54,7 @@ chmod 755 $target_file
 
 time Build 
 
+echo "Artifact is here \"$target_file\""
 ## Print time for result
 #endTime=$(date +%s%N)
 #elapsed=`echo "($endTime - $beginTime) / 1000000" | bc`

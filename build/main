@@ -7,16 +7,7 @@ Barr="==========================================================================
 BARR="###########################################################################"
 ROWW="============================================================="
 
-### Base information
-### ------ Config Area ----- 11st line here
-#
-ManagerIP="DISTsERVERIp"
-Dist_server="http://DISTsERVERsET"
-ZinstBaseRoot="RootDirectorY"
-ZinstDIRs="$ZinstBaseRoot/zinst"
-ZinstSourceDir="$ZinstBaseRoot/vault/Source"
-#
-### ------ Config Area ----- 19th line here
+source ./conf/zinst_test.conf
 
 ### Exception for Docker user
 ### Docker user can changes the hosts-file to the other hosts-file  as below solution
