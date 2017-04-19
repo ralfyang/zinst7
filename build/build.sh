@@ -28,7 +28,7 @@ rm -f $target_file;touch $target_file
 	while [[ $count -le $endline ]];do	
 		if [[ `(echo $(awk "NR == $count" $src_org |egrep 'source \.\/src'))` != "" ]];then
 			Exec=`echo $(awk "NR == $count" $src_org | sed -e 's/source /cat /g')`
-			$Exec |sed '/^\#\!\/bin\/bash/d'  >> $target_file
+			$Exec |sed '/\#\!\//d'  >> $target_file
 			## Part of Progress bar
 			pd=$(( $Cnt * 45 / ${#all_src[@]} ))
 				if [[ $Cnt = ${#all_src[@]} ]];then
