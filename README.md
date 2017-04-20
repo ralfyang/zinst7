@@ -1,5 +1,12 @@
 # zinst7
+## Install
+  * We have 2 way of install
+    * 1st way is ___client only mode___ via github reposityr as below
+      * `curl -sL bit.ly/zinst-install |bash`
+    * 2nd way is the ___private server & client mode___ via local install as below
+      * `git clone https://github.com/goody80/zinst7.git; cd zinst7; ./install.sh`
 
+## Directorys & Files
 ```
 ├── back 					- For old backup
 │   ├── zinst_conf
