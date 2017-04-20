@@ -3,10 +3,17 @@ BARR="==========================================================================
 Barr="---------------------------------------------------------------------------------------------------"
 pstr="[==========================================]"
 
+	## Recognize the Buil dir
+	if [[ ! -d ./src ]] || [[ ! -d ./conf ]] || [[ ! -f main ]];then
+		echo " - Build process needed the 'src','conf' dir with 'main' file"
+		exit 1
+	fi
+
 Build ()
 {
-src_org="./main"
-target_file="../zinst"
+build_dir="$PWD"
+src_org="$build_dir/main"
+target_file="$build_dir/../zinst"
 
 ## All source scan
 all_src=(`egrep 'source \.\/src' ./main | awk '{print $2}'`)
@@ -26,7 +33,7 @@ rm -f $target_file;touch $target_file
 	echo "$Barr"
 	count=1
 	Cnt=0
-	while [[ $count -lt $endline ]];do	
+	while [[ $count -le $endline ]];do	
 		if [[ `(echo $(awk "NR == $count" $src_org |egrep 'source \.\/src'))` != "" ]] || [[ `(echo $(awk "NR == $count" $src_org |egrep 'source \.\/conf'))` != "" ]] ;then
 			Exec=`echo $(awk "NR == $count" $src_org | sed -e 's/source /cat /g')`
 			$Exec |sed '/\#\!\//d'  >> $target_file
