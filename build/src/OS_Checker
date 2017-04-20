@@ -1,4 +1,5 @@
 #!/bin/bash
+#!/ <-- This simbole will be remove with same-line via build.sh. this is just for TDD
 
 ## OS Check
 Chk_OS_file='/tmp/chked_os.txt'
@@ -26,4 +27,4 @@ Chk_OS_file='/tmp/chked_os.txt'
 		OS_name=`cat /tmp/chked_os.txt`
 	fi
 
-cat /tmp/chked_os.txt #!/
+cat /tmp/chked_os.txt #!/ test print

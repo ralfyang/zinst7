@@ -265,9 +265,17 @@ Pass_Checker() {
 }
 
 Daemon_list(){
-## package_name is check for daemon list
 
+## package_name is check for daemon list
 package_name=$1
+
+	## Check the system control command
+	if [[ $system_command = "systemctl" ]];then
+		DaemonDir="/lib/systemd/system/"
+	else
+		DaemonDir="/etc/init.d/"
+	fi
+## Progress bar
 pstr="[==================================================================]"
 echo " Scaning..."
         if [[ $package_name = "" ]];then
@@ -278,7 +286,7 @@ echo " Scaning..."
                 echo "$Barr" >> $Print_list
                         Count=0
                         while [ $Count -lt ${#pkg_list[@]} ];do
-                                daemon_check=`zinst ls ${pkg_list[$Count]} -file |grep "/etc/init.d/" | awk -F "/" '{print $NF}'`
+                                daemon_check=`zinst ls ${pkg_list[$Count]} -file |grep "$DaemonDir" | awk -F "/" '{print $NF}'`
                                 if [[ $daemon_check != "" ]];then
                                         echo ""  >> $Print_list
                                         echo "+ ${pkg_list[$Count]}:" >> $Print_list
@@ -301,7 +309,7 @@ echo " Scaning..."
                 cat $Print_list
         else
                 echo "$Barr"
-                        daemon_check=`zinst ls $package_name -file |grep "/etc/init.d/" |tail -1 | awk -F "/" '{print $NF}'`
+                        daemon_check=`zinst ls $package_name -file |grep "$DaemonDir" |tail -1 | awk -F "/" '{print $NF}'`
                         if [[ $daemon_check != "" ]];then
                                 echo ""
                                 echo "$Barr"
@@ -478,7 +486,12 @@ ZPackages=${PackageArry[@]}
 ZOptions=${PackageArryOption[@]}
 Zset=${PackageArrySet[@]}
 ZHosts=${HostChanged[@]}
-History_LOG="$ZinstBaseRoot/vault/Source/.zinst_history_log"
+
+Log_History_dir(){
+        History_LOG="$ZinstBaseRoot/vault/Source/.zinst_history_log"
+}
+Log_History_dir
+
 
 ### Alias for existed fuction
 ProcessPkg=$ZPackages
@@ -1051,7 +1064,7 @@ Pkg_Install(){
 	 			$sudo_base chmod g+w $ZinstBaseRoot/vault/Source/$ZinstName
 			fi
 
-			if [[ `(echo "$Package_RC" |egrep "[nN]ot")` != "" ]]
+			if [[ `(echo "$Package_RC" |egrep -i "not")` != "" ]]
 			then
 				echo "  "
 				echo "  $Package_list Package has not found."
@@ -2460,8 +2473,10 @@ echo " "
 
 
 History(){
+# ZPackages is a number for seek the history such as 10 or 100
 		if [[ $ZPackages != "" ]]
 		then
+				## It will be revert to dash degit
 				ZPackages="-$ZPackages"
 		fi
 	tail $ZPackages $History_LOG
@@ -2663,4 +2678,3 @@ sudo mkdir -p $CurrPkgDiR
 		Halt_Virtual ;;
 	*)
 		Help_Command	;;
-	esac

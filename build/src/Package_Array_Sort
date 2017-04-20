@@ -1,4 +1,6 @@
 #!/bin/bash
+#!/ <-- This simbole will be remove with same-line via build.sh. this is just for TDD
+source ../conf/zinst.conf 		#!/ Test load
 BoxPkg=$ZPackages
 BoxPkgArry=( $BoxPkg )
 

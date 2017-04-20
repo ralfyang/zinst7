@@ -293,7 +293,12 @@ ZPackages=${PackageArry[@]}
 ZOptions=${PackageArryOption[@]}
 Zset=${PackageArrySet[@]}
 ZHosts=${HostChanged[@]}
-History_LOG="$ZinstBaseRoot/vault/Source/.zinst_history_log"
+
+Log_History_dir(){
+	source ./src/Log_History_dir
+}
+Log_History_dir
+
 
 ### Alias for existed fuction
 ProcessPkg=$ZPackages

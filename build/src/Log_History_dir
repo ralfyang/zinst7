@@ -1,0 +1,3 @@
+#!/bin/bash
+source ../conf/zinst.conf 	#!/ test load
+        History_LOG="$ZinstBaseRoot/vault/Source/.zinst_history_log"

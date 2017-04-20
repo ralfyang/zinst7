@@ -26,13 +26,13 @@ rm -f $target_file;touch $target_file
 	echo "$Barr"
 	count=1
 	Cnt=0
-	while [[ $count -le $endline ]];do	
+	while [[ $count -lt $endline ]];do	
 		if [[ `(echo $(awk "NR == $count" $src_org |egrep 'source \.\/src'))` != "" ]] || [[ `(echo $(awk "NR == $count" $src_org |egrep 'source \.\/conf'))` != "" ]] ;then
 			Exec=`echo $(awk "NR == $count" $src_org | sed -e 's/source /cat /g')`
 			$Exec |sed '/\#\!\//d'  >> $target_file
 			## Part of Progress bar
 			All_count="$(( ${#all_src[@]} + ${#all_conf[@]} ))"
-			pd=$(( $Cnt * 45 / $All_count ))
+			pd=$(( $Cnt * 46 / $All_count ))
 				if [[ $Cnt = ${#all_src[@]} ]];then
 					Pkg_picklist=" - Source code Build has been finished -"
 				else

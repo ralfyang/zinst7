@@ -1,6 +1,11 @@
 #!/bin/bash
+#!/ <-- This simbole will be remove with same-line via build.sh. this is just for TDD
+# ZPackages is a number for seek the history such as 10 or 100
+ZPackages=$1			#!/
+source ./Log_History_dir 	#!/ test load
 		if [[ $ZPackages != "" ]]
 		then
+				## It will be revert to dash degit
 				ZPackages="-$ZPackages"
 		fi
 	tail $ZPackages $History_LOG

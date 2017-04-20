@@ -42,7 +42,7 @@
 	 			$sudo_base chmod g+w $ZinstBaseRoot/vault/Source/$ZinstName
 			fi
 
-			if [[ `(echo "$Package_RC" |egrep "[nN]ot")` != "" ]]
+			if [[ `(echo "$Package_RC" |egrep -i "not")` != "" ]]
 			then
 				echo "  "
 				echo "  $Package_list Package has not found."
