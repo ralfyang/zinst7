@@ -1,4 +1,5 @@
 #!/bin/bash
+#!/ <-- This simbole will be remove with same-line via build.sh. this is just for TDD
 ## package_name is check for daemon list
 
 package_name=$1

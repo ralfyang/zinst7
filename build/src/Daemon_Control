@@ -1,16 +1,21 @@
 #!/bin/bash
+#!/ <-- This simbole will be remove with same-line via build.sh. this is just for TDD
+
+Daemon_check_dir="$ZinstBaseRoot/vault/Source"
+
+##### Test variables Area ##### #!/
+## Need some parameters from command-line  as below #!/ for test
+## Daemon_Control restart httpd  #!/ for test
+ZPackages=$2 #!/ for user insert test
+source OS_Checker #!/ for test with OS check
+source System_Controller_checker #!/ for test with system command check
+Daemon_check_dir="/tmp" 	#!/ for tmp store of Daemon check
+History_LOG="/tmp/history_tmp"	#!/ for history tmp file
+OS_name=`cat /tmp/chked_os.txt`	#!/ for user insert test
+CommandX=$ZPackages		#!/ for test
+
 ProcessPkg=($ZPackages)
 ProcessPkgNum=${#ProcessPkg[@]}
-ServiceCMD=`which service`
-	case $OS_name in
-		RHEL)
-			ServiceDaemonDir=`$sudo_base cat $ServiceCMD | grep "SERVICEDIR=" | awk -F '=' '{print $2}' | sed -e 's/"//g'`;;
-		Ubuntu)
-			ServiceDaemonDir=`$sudo_base cat $ServiceCMD | grep "SERVICEDIR=" | awk -F '=' '{print $2}' | sed -e 's/"//g'`;;
-		*)
-			echo " --- We are not support on this OS ---" 
-			exit 0;;
-	esac
 
 Counter=0
 Command_p="# Daemon $CommandX"
@@ -21,18 +26,30 @@ ColorDark="30"
 	while [[ $Counter -lt $ProcessPkgNum ]]
 	do
 		DaemonC=`echo "${ProcessPkg[$Counter]}"`
+		DaemonC=$1 #!/ for test
+			case $system_command in
+				systemctl)
+					systemCMD="systemctl $DaemonC $CommandX.service";;
+				service)
+					systemCMD="service $CommandX $DaemonC";;
+				*)
+					echo " --- We are not support on this OS ---" 
+					exit 0;;
+			esac
 		export LANG=C
 			if [[ $CommandX = "run" ]];then
 				#$sudo_base $ServiceDaemonDir/$DaemonC $CommandX
-				$sudo_base service $DaemonC $CommandX
+				$sudo_base $systemCMD
+				echo "$sudo_base $systemCMD ---" #!/ for test
 			else
-				#$sudo_base service $DaemonC $CommandX | tee $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
-				$sudo_base service $DaemonC $CommandX &> $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
-				$sudo_base chmod 664 $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
-				$sudo_base chgrp wheel $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
-				$sudo_base cat $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
+				#$sudo_base service $DaemonC $CommandX | tee $Daemon_check_dir/Daemon_ctrl.log
+				$sudo_base $systemCMD &> $Daemon_check_dir/Daemon_ctrl.log
+				echo "$sudo_base $systemCMD &> $Daemon_check_dir/Daemon_ctrl.log ---" #!/ for test
+				$sudo_base chmod 664 $Daemon_check_dir/Daemon_ctrl.log
+				$sudo_base chgrp wheel $Daemon_check_dir/Daemon_ctrl.log
+				$sudo_base cat $Daemon_check_dir/Daemon_ctrl.log
 			fi
-		DaemLog=`$sudo_base cat $ZinstBaseRoot/vault/Source/Daemon_ctrl.log |tail -1`
+		DaemLog=`$sudo_base cat $Daemon_check_dir/Daemon_ctrl.log |tail -1`
 		Daemon_S=$DaemLog
 			FailCheck=`echo $DaemLog | grep "FAILED"`
 			if [[ $FailCheck != "" ]];then
@@ -47,7 +64,7 @@ ColorDark="30"
 				:
 			fi
 			DaemLog=$Daemon_S
-		## Replaced by tee              $sudo_base cat $ZinstBaseRoot/vault/Source/Daemon_ctrl.log 2> /dev/null
+		## Replaced by tee              $sudo_base cat $Daemon_check_dir/Daemon_ctrl.log 2> /dev/null
 
 		## Checking the daemon
 		sleep 1
@@ -76,5 +93,5 @@ ColorDark="30"
 			fi
 		echo -e "\t\t\t $WhoStamps : #     - $Command_Result " >> $History_LOG
 		let Counter=Counter+1
-        $sudo_base rm -f $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
+        $sudo_base rm -f $Daemon_check_dir/Daemon_ctrl.log
 	done

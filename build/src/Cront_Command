@@ -1,4 +1,9 @@
 #!/bin/bash
+#!/ <-- This simbole will be remove with same-line via build.sh. this is just for TDD
+
+## Need  4 parameter from command-line  as below #!/ for test
+## Cront_Command cront -u root -l  #!/ for test
+ZPackages=$3 #!/ for user insert test
 Command_p="+ Crontab - Edit"
 	case "$2" in
 	-l)

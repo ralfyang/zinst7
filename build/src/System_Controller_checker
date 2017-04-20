@@ -1,0 +1,10 @@
+#!/bin/bash
+	if [[ `(which systemctl)` = "" ]];then
+		if [[ `(which service)` = "" ]];then
+			system_command="service"
+		else
+			system_command=""
+		fi
+	else
+		system_command="systemctl"
+	fi

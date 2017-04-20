@@ -1,23 +1,29 @@
 #!/bin/bash
 
-                ## OS Check
-                if [[ $(uname) == Linux ]];then
-                                if [[ $(cat /etc/*-release 2> /dev/null | head -1 |grep Ubuntu) != "" ]];then
-                                        OS_name="Ubuntu"
-                                elif [[ $(cat /etc/lsb-release 2> /dev/null | head -1 |grep LinuxMint) != "" ]];then
-                                        OS_name="Ubuntu"
-                                elif [[ $(cat /etc/redhat-release 2> /dev/null | head -1 |grep "CentOS") != "" ]] || [[ $(cat /etc/redhat-release 2> /dev/null | head -1 |grep "Red Hat") != "" ]]  ;then
-                                        if [[ `(grep "CentOS" /etc/redhat-release 2> /dev/null |grep "[0-9]" | sed -e 's/[ a-zA-Z()]//g' |grep "^7")` ]] || [[ `(grep "Red Hat" /etc/redhat-release 2> /dev/null |grep "[0-9]" | sed -e 's/[ a-zA-Z()]//g' |grep "^7")` ]] ;then
-                                                OS_name="RHEL7"
-                                        else
-                                                OS_name="RHEL"
-                                        fi
-                                elif [[ $(cat /etc/*-release 2> /dev/null |grep "rhel") != "" ]]  ;then
-                                        OS_name="RHEL"
-                                fi
-                elif [[ $(uname) == Darwin ]];then
-                        OS_name="OSX"
-                else
-                        OS_name="freeBSD"
-                fi
+## OS Check
+Chk_OS_file='/tmp/chked_os.txt'
+	if [[ ! -f $Chk_OS_file ]];then
+		if [[ $(uname) == Linux ]];then
+			if [[ $(cat /etc/*-release 2> /dev/null | head -1 |grep Ubuntu) != "" ]];then
+				OS_name="Ubuntu";echo "$OS_name" > $Chk_OS_file
+			elif [[ $(cat /etc/lsb-release 2> /dev/null | head -1 |grep LinuxMint) != "" ]];then
+				OS_name="Ubuntu";echo "$OS_name" > $Chk_OS_file
+			elif [[ $(cat /etc/redhat-release 2> /dev/null | head -1 |grep "CentOS") != "" ]] || [[ $(cat /etc/redhat-release 2> /dev/null | head -1 |grep "Red Hat") != "" ]]  ;then
+				if [[ `(grep "CentOS" /etc/redhat-release 2> /dev/null |grep "[0-9]" | sed -e 's/[ a-zA-Z()]//g' |grep "^7")` ]] || [[ `(grep "Red Hat" /etc/redhat-release 2> /dev/null |grep "[0-9]" | sed -e 's/[ a-zA-Z()]//g' |grep "^7")` ]] ;then
+					OS_name="RHEL7";echo "$OS_name" > $Chk_OS_file
+				else
+					OS_name="RHEL";echo "$OS_name" > $Chk_OS_file
+				fi
+			elif [[ $(cat /etc/*-release 2> /dev/null |grep "rhel") != "" ]]  ;then
+				OS_name="RHEL";echo "$OS_name" > $Chk_OS_file
+			fi
+		elif [[ $(uname) == Darwin ]];then
+			OS_name="OSX";echo "$OS_name" > $Chk_OS_file
+		else
+			OS_name="freeBSD";echo "$OS_name" > $Chk_OS_file
+		fi
+	else
+		OS_name=`cat /tmp/chked_os.txt`
+	fi
 
+cat /tmp/chked_os.txt #!/

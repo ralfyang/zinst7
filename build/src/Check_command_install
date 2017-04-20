@@ -1,16 +1,22 @@
 #!/bin/bash
+#!/ <-- This simbole will be remove with same-line via build.sh. this is just for TDD
 
+## Need a $1 parameter from command-line #!/ for test
 OS_name=$1
 ## chech which command & install
 check_which=`which 2> /tmp/chk_req.out`
 
         if [[ `(grep "not found" /tmp/chk_req.out )` != ""  ]] ; then
 		case $OS_name in
-			RHEL)
+			RHEL*)
 				$sudo_base yum install which -y ;;
 			Ubuntu) 
 				$sudo_base apt-get install which -y ;;
 		esac
 	## clear tmp file
 	rm -f  /tmp/chk_req.out
+	else #!/ test else 
+		echo "Which command has been installed already" #!/ test ment
         fi
+
+
