@@ -1,5 +1,8 @@
 #!/bin/bash
 BaseIP=`ip a s eth0 |grep "inet " | awk '{print $2}' | awk -F'/' '{print $1}'`
+	if [[ $BaseIP = "" ]];then
+		BaseIP=`ip a s  |grep "inet " | awk '{print $2}' | awk -F'/' '{print $1}' | egrep -v "127.0.0.1" | head -1`
+	fi
 sudo rm /usr/bin/zinst
 sudo cp ./zinst /usr/bin/zinst
 sudo zinst self-config ip=$BaseIP host=$BaseIP dir=/data

@@ -24,7 +24,7 @@
 			if [[ $Pkg_result != $Package_list ]]
 			then
 				###  check package by curl ###
-				Package_RC=`curl --head --silent $Dist_URL/$Package_list 2> $zinst_log |awk '{print $3}' | head -1`
+				Package_RC=`curl --head --silent $Dist_URL/$Package_list 2> $zinst_log | head -1`
 			fi
 
 			#### check local zinst file
@@ -42,7 +42,7 @@
 	 			$sudo_base chmod g+w $ZinstBaseRoot/vault/Source/$ZinstName
 			fi
 
-			if [[ $Package_RC = "Not" ]]
+			if [[ `(echo "$Package_RC" |egrep "[nN]ot")` != "" ]]
 			then
 				echo "  "
 				echo "  $Package_list Package has not found."
