@@ -10,6 +10,7 @@ target_file="../zinst"
 
 ## All source scan
 all_src=(`egrep 'source \.\/src' ./main | awk '{print $2}'`)
+all_conf=(`egrep 'source \.\/conf' ./main | awk '{print $2}'`)
 
 ## Define Last line number
 endline=`wc -l $src_org| awk '{print $1}'`
@@ -24,13 +25,14 @@ rm -f $target_file;touch $target_file
 	echo " Source code build..."
 	echo "$Barr"
 	count=1
-	Cnt=1
+	Cnt=0
 	while [[ $count -le $endline ]];do	
 		if [[ `(echo $(awk "NR == $count" $src_org |egrep 'source \.\/src'))` != "" ]] || [[ `(echo $(awk "NR == $count" $src_org |egrep 'source \.\/conf'))` != "" ]] ;then
 			Exec=`echo $(awk "NR == $count" $src_org | sed -e 's/source /cat /g')`
 			$Exec |sed '/\#\!\//d'  >> $target_file
 			## Part of Progress bar
-			pd=$(( $Cnt * 45 / ${#all_src[@]} ))
+			All_count="$(( ${#all_src[@]} + ${#all_conf[@]} ))"
+			pd=$(( $Cnt * 45 / $All_count ))
 				if [[ $Cnt = ${#all_src[@]} ]];then
 					Pkg_picklist=" - Source code Build has been finished -"
 				else

@@ -26,7 +26,7 @@ ZinstSourceDir="$ZinstBaseRoot/vault/Source"
 ## ENV LD_LIBRARY_PATH /lib-override
 
 ## Base information
-VERSION=7.0.0
+VERSION=7.0.1
 zinst_group="wheel"
 sudo_base="sudo"
 zinst_log="/dev/null"
@@ -34,31 +34,48 @@ zinst_log="/dev/null"
 
 OS_Checker(){
 
-                ## OS Check
-                if [[ $(uname) == Linux ]];then
-                                if [[ $(cat /etc/*-release 2> /dev/null | head -1 |grep Ubuntu) != "" ]];then
-                                        OS_name="Ubuntu"
-                                elif [[ $(cat /etc/lsb-release 2> /dev/null | head -1 |grep LinuxMint) != "" ]];then
-                                        OS_name="Ubuntu"
-                                elif [[ $(cat /etc/redhat-release 2> /dev/null | head -1 |grep "CentOS") != "" ]] || [[ $(cat /etc/redhat-release 2> /dev/null | head -1 |grep "Red Hat") != "" ]]  ;then
-                                        if [[ `(grep "CentOS" /etc/redhat-release 2> /dev/null |grep "[0-9]" | sed -e 's/[ a-zA-Z()]//g' |grep "^7")` ]] || [[ `(grep "Red Hat" /etc/redhat-release 2> /dev/null |grep "[0-9]" | sed -e 's/[ a-zA-Z()]//g' |grep "^7")` ]] ;then
-                                                OS_name="RHEL7"
-                                        else
-                                                OS_name="RHEL"
-                                        fi
-                                elif [[ $(cat /etc/*-release 2> /dev/null |grep "rhel") != "" ]]  ;then
-                                        OS_name="RHEL"
-                                fi
-                elif [[ $(uname) == Darwin ]];then
-                        OS_name="OSX"
-                else
-                        OS_name="freeBSD"
-                fi
+## OS Check
+Chk_OS_file='/tmp/chked_os.txt'
+	if [[ ! -f $Chk_OS_file ]];then
+		if [[ $(uname) == Linux ]];then
+			if [[ $(cat /etc/*-release 2> /dev/null | head -1 |grep Ubuntu) != "" ]];then
+				OS_name="Ubuntu";echo "$OS_name" > $Chk_OS_file
+			elif [[ $(cat /etc/lsb-release 2> /dev/null | head -1 |grep LinuxMint) != "" ]];then
+				OS_name="Ubuntu";echo "$OS_name" > $Chk_OS_file
+			elif [[ $(cat /etc/redhat-release 2> /dev/null | head -1 |grep "CentOS") != "" ]] || [[ $(cat /etc/redhat-release 2> /dev/null | head -1 |grep "Red Hat") != "" ]]  ;then
+				if [[ `(grep "CentOS" /etc/redhat-release 2> /dev/null |grep "[0-9]" | sed -e 's/[ a-zA-Z()]//g' |grep "^7")` ]] || [[ `(grep "Red Hat" /etc/redhat-release 2> /dev/null |grep "[0-9]" | sed -e 's/[ a-zA-Z()]//g' |grep "^7")` ]] ;then
+					OS_name="RHEL7";echo "$OS_name" > $Chk_OS_file
+				else
+					OS_name="RHEL";echo "$OS_name" > $Chk_OS_file
+				fi
+			elif [[ $(cat /etc/*-release 2> /dev/null |grep "rhel") != "" ]]  ;then
+				OS_name="RHEL";echo "$OS_name" > $Chk_OS_file
+			fi
+		elif [[ $(uname) == Darwin ]];then
+			OS_name="OSX";echo "$OS_name" > $Chk_OS_file
+		else
+			OS_name="freeBSD";echo "$OS_name" > $Chk_OS_file
+		fi
+	else
+		OS_name=`cat /tmp/chked_os.txt`
+	fi
 
 }
 
 OS_Checker
 
+System_Controller_checker(){
+	if [[ `(which systemctl)` = "" ]];then
+		if [[ `(which service)` = "" ]];then
+			system_command="service"
+		else
+			system_command=""
+		fi
+	else
+		system_command="systemctl"
+	fi
+}
+System_Controller_checker
 
 Select_OS(){
 OS_name=$1
@@ -129,12 +146,14 @@ ComPkg=($@)
 
 
 Check_command_install(){
+
 OS_name=$1
 ## chech which command & install
 check_which=`which 2> /tmp/chk_req.out`
+
         if [[ `(grep "not found" /tmp/chk_req.out )` != ""  ]] ; then
 		case $OS_name in
-			RHEL)
+			RHEL*)
 				$sudo_base yum install which -y ;;
 			Ubuntu) 
 				$sudo_base apt-get install which -y ;;
@@ -142,6 +161,8 @@ check_which=`which 2> /tmp/chk_req.out`
 	## clear tmp file
 	rm -f  /tmp/chk_req.out
         fi
+
+
 }
 
 Check_command_install $OS_name
@@ -157,7 +178,6 @@ HostsFile="/etc/hostsa"
 	fi
 
 hosts_redefine(){
-#/bin/bash
 
 $sudo_base cat $HostsFile > /tmp/hosts.tmp
 $sudo_base sed -i "s#/#@Q@#g" /tmp/hosts.tmp
@@ -1744,6 +1764,7 @@ echo ""| sort $Sort_version 1>&2 > /tmp/sort_check.out
 }
 
 Cront_Command(){
+
 Command_p="+ Crontab - Edit"
 	case "$2" in
 	-l)
@@ -2023,18 +2044,12 @@ rm -f $Sorted_org_zsave $Sorted_tgt_zsave $tmp_results $remove_zsave_list $insta
 }
 
 Daemon_Control(){
+
+Daemon_check_dir="$ZinstBaseRoot/vault/Source"
+
+
 ProcessPkg=($ZPackages)
 ProcessPkgNum=${#ProcessPkg[@]}
-ServiceCMD=`which service`
-	case $OS_name in
-		RHEL)
-			ServiceDaemonDir=`$sudo_base cat $ServiceCMD | grep "SERVICEDIR=" | awk -F '=' '{print $2}' | sed -e 's/"//g'`;;
-		Ubuntu)
-			ServiceDaemonDir=`$sudo_base cat $ServiceCMD | grep "SERVICEDIR=" | awk -F '=' '{print $2}' | sed -e 's/"//g'`;;
-		*)
-			echo " --- We are not support on this OS ---" 
-			exit 0;;
-	esac
 
 Counter=0
 Command_p="# Daemon $CommandX"
@@ -2045,18 +2060,27 @@ ColorDark="30"
 	while [[ $Counter -lt $ProcessPkgNum ]]
 	do
 		DaemonC=`echo "${ProcessPkg[$Counter]}"`
+			case $system_command in
+				systemctl)
+					systemCMD="systemctl $DaemonC $CommandX.service";;
+				service)
+					systemCMD="service $CommandX $DaemonC";;
+				*)
+					echo " --- We are not support on this OS ---" 
+					exit 0;;
+			esac
 		export LANG=C
 			if [[ $CommandX = "run" ]];then
 				#$sudo_base $ServiceDaemonDir/$DaemonC $CommandX
-				$sudo_base service $DaemonC $CommandX
+				$sudo_base $systemCMD
 			else
-				#$sudo_base service $DaemonC $CommandX | tee $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
-				$sudo_base service $DaemonC $CommandX &> $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
-				$sudo_base chmod 664 $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
-				$sudo_base chgrp wheel $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
-				$sudo_base cat $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
+				#$sudo_base service $DaemonC $CommandX | tee $Daemon_check_dir/Daemon_ctrl.log
+				$sudo_base $systemCMD &> $Daemon_check_dir/Daemon_ctrl.log
+				$sudo_base chmod 664 $Daemon_check_dir/Daemon_ctrl.log
+				$sudo_base chgrp wheel $Daemon_check_dir/Daemon_ctrl.log
+				$sudo_base cat $Daemon_check_dir/Daemon_ctrl.log
 			fi
-		DaemLog=`$sudo_base cat $ZinstBaseRoot/vault/Source/Daemon_ctrl.log |tail -1`
+		DaemLog=`$sudo_base cat $Daemon_check_dir/Daemon_ctrl.log |tail -1`
 		Daemon_S=$DaemLog
 			FailCheck=`echo $DaemLog | grep "FAILED"`
 			if [[ $FailCheck != "" ]];then
@@ -2071,7 +2095,7 @@ ColorDark="30"
 				:
 			fi
 			DaemLog=$Daemon_S
-		## Replaced by tee              $sudo_base cat $ZinstBaseRoot/vault/Source/Daemon_ctrl.log 2> /dev/null
+		## Replaced by tee              $sudo_base cat $Daemon_check_dir/Daemon_ctrl.log 2> /dev/null
 
 		## Checking the daemon
 		sleep 1
@@ -2100,7 +2124,7 @@ ColorDark="30"
 			fi
 		echo -e "\t\t\t $WhoStamps : #     - $Command_Result " >> $History_LOG
 		let Counter=Counter+1
-        $sudo_base rm -f $ZinstBaseRoot/vault/Source/Daemon_ctrl.log
+        $sudo_base rm -f $Daemon_check_dir/Daemon_ctrl.log
 	done
 }
 

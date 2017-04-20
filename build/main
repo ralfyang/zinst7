@@ -7,7 +7,7 @@ Barr="==========================================================================
 BARR="###########################################################################"
 ROWW="============================================================="
 
-source ./conf/zinst_test.conf
+source ./conf/zinst.conf
 
 ### Exception for Docker user
 ### Docker user can changes the hosts-file to the other hosts-file  as below solution
@@ -17,7 +17,7 @@ source ./conf/zinst_test.conf
 ## ENV LD_LIBRARY_PATH /lib-override
 
 ## Base information
-VERSION=7.0.0
+VERSION=7.0.1
 zinst_group="wheel"
 sudo_base="sudo"
 zinst_log="/dev/null"
@@ -29,6 +29,10 @@ OS_Checker(){
 
 OS_Checker
 
+System_Controller_checker(){
+	source ./src/System_Controller_checker
+}
+System_Controller_checker
 
 Select_OS(){
 	source ./src/Select_OS
