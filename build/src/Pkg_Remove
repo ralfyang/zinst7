@@ -1,5 +1,19 @@
 #!/bin/bash
+#!/ <-- This simbole will be remove with same-line via build.sh. this is just for TDD
+
+## Need a parameter from command-line  as below	   		#!/ for test
+## ./Pkg_Remove git 		  				#!/ for test
+
+## Test input from command-line					#!/ for test
+
+Save_Restore_file(){						#!/ test include
+	source /root/zinst7/build/src/Save_Restore_file		#!/ test include
+}								#!/ test include
+ZPackages=$1							#!/ for test
+source ../conf/zinst.conf					#!/ for test
+
 ProcessPkg=($ZPackages)
+ProcessPkgNum=${#ProcessPkg[@]}
 	if [[ $ZPackages = "" ]]
 	then
 		echo "=============== Please insert a package name as you need to see ============"
@@ -10,6 +24,7 @@ ProcessPkg=($ZPackages)
 				Pkg_list=${ProcessPkg[$Counter]}
 				ZinstOrgName=`echo $Pkg_list| awk -F "-" '{print $1}'`
 				Package_rc=`ls $ZinstDIRs |egrep "^$ZinstOrgName$"`
+echo "YAYAYAYAY----------------------------YAYAY $Pkg_list"
 					if [[ $ZinstOrgName != $Package_rc ]]
 					then
 						echo "  "

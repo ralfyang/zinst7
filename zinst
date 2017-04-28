@@ -18,6 +18,7 @@ ZinstSourceDir="$ZinstBaseRoot/vault/Source"
 #
 ### ------ Config Area ----- 19th line here
 
+
 ### Exception for Docker user
 ### Docker user can changes the hosts-file to the other hosts-file  as below solution
 ## RUN cp /etc/hosts /etc/hostsa
@@ -993,6 +994,8 @@ StableOptionCheck=`echo "${PackageArryOption[@]}" |grep "\-stable"`
 
 Save_Restore_file(){
 ### Save a restore file 
+
+
 Save_File_num=`ls $Save_Dir/ |egrep ^$Save_Filename | awk '{print NR}' |tail -1`
     if [[ $Save_File_num = ""  ]];
     then
@@ -1549,7 +1552,12 @@ CheckSetNum=${#CheckSetArry[@]}
 }
 
 Pkg_Remove(){
+
+
+
+
 ProcessPkg=($ZPackages)
+ProcessPkgNum=${#ProcessPkg[@]}
 	if [[ $ZPackages = "" ]]
 	then
 		echo "=============== Please insert a package name as you need to see ============"
@@ -1560,6 +1568,7 @@ ProcessPkg=($ZPackages)
 				Pkg_list=${ProcessPkg[$Counter]}
 				ZinstOrgName=`echo $Pkg_list| awk -F "-" '{print $1}'`
 				Package_rc=`ls $ZinstDIRs |egrep "^$ZinstOrgName$"`
+echo "YAYAYAYAY----------------------------YAYAY $Pkg_list"
 					if [[ $ZinstOrgName != $Package_rc ]]
 					then
 						echo "  "

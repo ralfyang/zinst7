@@ -1,5 +1,9 @@
 #!/bin/bash
 ### Save a restore file 
+
+Save_Dir="/data/z/save"			#!/ test variable
+zinst_log="/dev/null"			#!/ test variable
+
 Save_File_num=`ls $Save_Dir/ |egrep ^$Save_Filename | awk '{print NR}' |tail -1`
     if [[ $Save_File_num = ""  ]];
     then
