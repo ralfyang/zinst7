@@ -1,4 +1,7 @@
 # zinst7
+## Manual
+  * https://github.com/goody80/Ralf_Dev/blob/master/README.md
+
 ## Install
   * We have 2 way of install
     * 1st way is ___client only mode___ via github reposityr as below
