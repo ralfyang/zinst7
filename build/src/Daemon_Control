@@ -1,18 +1,18 @@
 #!/bin/bash
 #!/ <-- This simbole will be remove with same-line via build.sh. this is just for TDD
+## Parsing!!!   importatant area
+source ./Parser_engine		#!/ for All command Parsing
 
 Daemon_check_dir="$ZinstBaseRoot/vault/Source"
 
 ##### Test variables Area ##### #!/
 ## Need some parameters from command-line  as below #!/ for test
 ## Daemon_Control restart httpd  #!/ for test
-ZPackages=$2 #!/ for user insert test
 source OS_Checker #!/ for test with OS check
 source System_Controller_checker #!/ for test with system command check
 Daemon_check_dir="/tmp" 	#!/ for tmp store of Daemon check
 History_LOG="/tmp/history_tmp"	#!/ for history tmp file
 OS_name=`cat /tmp/chked_os.txt`	#!/ for user insert test
-CommandX=$ZPackages		#!/ for test
 
 ProcessPkg=($ZPackages)
 ProcessPkgNum=${#ProcessPkg[@]}
@@ -26,12 +26,18 @@ ColorDark="30"
 	while [[ $Counter -lt $ProcessPkgNum ]]
 	do
 		DaemonC=`echo "${ProcessPkg[$Counter]}"`
-		DaemonC=$1 #!/ for test
+			## Custom package check
+			if [[ -f "/etc/init.d/$DaemonC" ]];then
+				system_command=custome_ctl
+			fi
+
 			case $system_command in
 				systemctl)
-					systemCMD="systemctl $DaemonC $CommandX.service";;
+					systemCMD="systemctl $CommandX $DaemonC.service";;
 				service)
-					systemCMD="service $CommandX $DaemonC";;
+					systemCMD="service $DaemonC $CommandX";;
+				custome_ctl)
+					systemCMD="/etc/init.d/$DaemonC $CommandX";;
 				*)
 					echo " --- We are not support on this OS ---" 
 					exit 0;;

@@ -27,7 +27,7 @@ ZinstSourceDir="$ZinstBaseRoot/vault/Source"
 ## ENV LD_LIBRARY_PATH /lib-override
 
 ## Base information
-VERSION=7.0.1
+VERSION=7.0.2
 zinst_group="wheel"
 sudo_base="sudo"
 zinst_log="/dev/null"
@@ -238,17 +238,11 @@ CheckSaveDir=`ls $ZinstBaseRoot/z 2> $zinst_log |grep save`
 		$sudo_base mkdir -p $Save_Dir
 		$sudo_base chgrp $zinst_group $Save_Dir
 	fi
-	
-PackageAll=$@
-#########################################################################################
-############################ zinst parsing engine start #################################
 
-## Check for the Multi-host password automation
-Check_Multi_pass=`echo "$PackageAll" |grep " \-pass"`
-	if [[ $Check_Multi_pass != "" ]]; then
-		Check_Multi_pw="OK"
-		PackageAll=`echo "$PackageAll" | sed -e 's/ -pass/ /g'` 
-	fi
+Log_History_dir(){
+        History_LOG="$ZinstBaseRoot/vault/Source/.zinst_history_log"
+}
+Log_History_dir
 
 Pass_Checker() {
  if [[ $Check_Multi_pw != "OK" ]]; then
@@ -327,6 +321,19 @@ exit 0
 rm -f $Print_list
 
 }
+
+## Parsing!!!   importatant area
+Parser_engine(){
+PackageAll=$@
+#########################################################################################
+############################ zinst parsing engine start #################################
+
+## Check for the Multi-host password automation
+Check_Multi_pass=`echo "$PackageAll" |grep " \-pass"`
+	if [[ $Check_Multi_pass != "" ]]; then
+		Check_Multi_pw="OK"
+		PackageAll=`echo "$PackageAll" | sed -e 's/ -pass/ /g'` 
+	fi
 
 
 ### Parsing for Host list
@@ -488,12 +495,6 @@ ZOptions=${PackageArryOption[@]}
 Zset=${PackageArrySet[@]}
 ZHosts=${HostChanged[@]}
 
-Log_History_dir(){
-        History_LOG="$ZinstBaseRoot/vault/Source/.zinst_history_log"
-}
-Log_History_dir
-
-
 ### Alias for existed fuction
 ProcessPkg=$ZPackages
 ProcessPkgNum=${#PackageArry[@]}
@@ -505,6 +506,11 @@ Allcommand="$CommandX $ZPackages $ZOptions $Zset"
 
 ############################  zinst parsing engine end ##################################
 #########################################################################################
+}
+PackageAll=$@
+Parser_engine $PackageAll
+
+
 ### History File reset for permission
 $sudo_base chmod 664 $History_LOG 2> $zinst_log
 $sudo_base chgrp $zinst_group $History_LOG 2> $zinst_log
@@ -2066,6 +2072,7 @@ rm -f $Sorted_org_zsave $Sorted_tgt_zsave $tmp_results $remove_zsave_list $insta
 }
 
 Daemon_Control(){
+## Parsing!!!   importatant area
 
 Daemon_check_dir="$ZinstBaseRoot/vault/Source"
 
@@ -2082,11 +2089,18 @@ ColorDark="30"
 	while [[ $Counter -lt $ProcessPkgNum ]]
 	do
 		DaemonC=`echo "${ProcessPkg[$Counter]}"`
+			## Custom package check
+			if [[ -f "/etc/init.d/$DaemonC" ]];then
+				system_command=custome_ctl
+			fi
+
 			case $system_command in
 				systemctl)
-					systemCMD="systemctl $DaemonC $CommandX.service";;
+					systemCMD="systemctl $CommandX $DaemonC.service";;
 				service)
-					systemCMD="service $CommandX $DaemonC";;
+					systemCMD="service $DaemonC $CommandX";;
+				custome_ctl)
+					systemCMD="/etc/init.d/$DaemonC $CommandX";;
 				*)
 					echo " --- We are not support on this OS ---" 
 					exit 0;;

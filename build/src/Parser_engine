@@ -1,0 +1,183 @@
+#!/bin/bash 
+PackageAll=$@
+#########################################################################################
+############################ zinst parsing engine start #################################
+
+## Check for the Multi-host password automation
+Check_Multi_pass=`echo "$PackageAll" |grep " \-pass"`
+	if [[ $Check_Multi_pass != "" ]]; then
+		Check_Multi_pw="OK"
+		PackageAll=`echo "$PackageAll" | sed -e 's/ -pass/ /g'` 
+	fi
+
+
+### Parsing for Host list
+HostCheck=`echo "$PackageAll" |grep " \-h \| \-H "`
+	if [[ $HostCheck != "" ]]
+	then
+		PackageArry=(`echo "$PackageAll" | awk -F ' -[h|H]' '{print $1}'`)
+		HostArry=(`echo "$PackageAll" | awk -F ' -[h|H]' '{print $2}'`)
+		### check sshpass
+		$sudo_base bash -c "sshpass -V 1> $zinst_log 2> /tmp/.sshpass_check"
+		Check_sshpass=`cat /tmp/.sshpass_check`
+			if [[ $Check_sshpass = "" ]]
+			then
+				Pass_Checker
+			else 
+				echo $Barr$Barr
+				echo " sshpass tool will be install first in this server(local) for the password insert automation as below"
+				echo $Barr$Barr
+				zinst i sshpass -stable
+				Pass_Checker
+			fi
+	else 
+		PackageArry=(`echo $PackageAll`)
+	fi
+	
+### Get Command Type
+CommandX=${PackageArry[0]}
+### Re-org for Set command
+	if [[ $CommandX = "set" ]]
+	then
+		PackageArry[1]="-set ${PackageArry[1]}"
+		PackageArry=( ${PackageArry[@]}  )
+	fi
+
+### Hostlist file check
+Hostlist_File=`echo $PackageAll | grep " \-H "`
+	if [[ $Hostlist_File != "" ]]
+	then
+		HostlistV="1"
+	fi
+
+### Get Package Array
+PackageArryNum=${#PackageArry[@]}
+
+### Remove install command
+PackageArry[0]=""
+
+MidPackageArry=${PackageArry[@]}
+
+	Counter=1
+	SubCounter=0
+	while [[ $Counter -lt $PackageArryNum ]]
+	do
+		CheckMum=${PackageArry[$Counter]}
+		CheckMumResult1=`echo "$CheckMum" |egrep "^-"`
+			### Set value patch
+			if [[ $CheckMumResult1 = "-set" ]]
+			then
+				PackageArrySet[$SubCounter]=${PackageArry[$Counter]}
+				PackageArrySet[$SubCounter+1]=${PackageArry[$Counter+1]}
+				PackageArry[$Counter]=""
+				PackageArry[$Counter+1]=""
+				let SubCounter=SubCounter+2
+				let Counter=Counter+1
+			elif [[ $CheckMumResult1 != "" ]]
+			then
+				PackageArryOption[$SubCounter]=${PackageArry[$Counter]}
+				PackageArry[$Counter]=""
+				let SubCounter=SubCounter+1
+			fi
+	let Counter=Counter+1
+	done
+
+	HostOptionCheck=`echo "${HostArry[@]}" |grep "\-set\|\-same\|\-downgrade\|\-stable|\-oldset"`
+	HostArryNum=${#HostArry[@]}
+	if [[ $HostOptionCheck != "" ]]
+	then
+	HostCounter=0
+		while [[ $HostCounter -lt $HostArryNum ]]
+		do
+			CheckMum=${HostArry[$HostCounter]}
+			CheckMumResult1=`echo "$CheckMum" |egrep "^-"`
+			### Set value patch
+			if [[ $CheckMumResult1 = "-set" ]]
+			then
+				PackageArrySet[$SubCounter]=${HostArry[$HostCounter]}
+				PackageArrySet[$SubCounter+1]=${HostArry[$HostCounter+1]}
+				HostArry[$HostCounter]=""
+				HostArry[$HostCounter+1]=""
+				let SubCounter=SubCounter+2
+				let HostCounter=HostCounter+1
+			elif [[ $CheckMumResult1 != "" ]]
+			then
+				PackageArryOption[$SubCounter]=${HostArry[$HostCounter]}
+				HostArry[$HostCounter]=""
+			fi
+			let HostCounter=HostCounter+1
+		done
+	fi
+
+	### Hostlist file check
+	if [[ $HostlistV = "1" ]]
+	then
+		HostFileCheck=`$sudo_base cat ${HostArry[@]} |sed -e  '/^$/d' -e '/^#/d'  | fgrep -v "^#" |fgrep -v "^$" 2> $ZinstDIRs/.Hostcheck 1> $zinst_log ;sudo cat $ZinstDIRs/.Hostcheck`
+		if [[ $HostFileCheck = "" ]]
+		then
+			HostArry=(`$sudo_base cat ${HostArry[@]} |sed -e  '/^$/d' -e '/^#/d'  `)
+		else 
+			echo "$Barr"
+			echo " Hostname is not correct - (${HostArry[@]}) or"
+			echo " Requires filename for listing exactly. Please make sure the filename "
+			echo "$Barr"
+			echo ""
+			exit 0;
+		fi
+		$sudo_base rm -f $ZinstDIRs/.Hostcheck
+	fi
+
+### Hostname change to regexp in Bash
+Hostlist=${HostArry[@]}
+HostCount=${#HostArry[@]}
+	CountExt=0
+	while [ $CountExt -le $HostCount ]
+	do
+		ServerOrd=`echo ${HostArry[$CountExt]} |grep "\["`
+		if [[ $ServerOrd != "" ]]
+		then
+			Sname=`echo ${HostArry[$CountExt]} | awk -F '[' '{print $1}'`
+		fi
+
+	let CountExt=CountExt+1
+	done
+
+### re-define array
+HostArry=(${HostArry[@]})
+
+### Change syntax for Bash regexp
+DashParser=`echo ${HostArry[@]}| sed -e 's/\[[[:alnum:]]*.\-/&../g' | sed -e 's/\-\.\./\.\./g' -e 's/\[[[:alnum:]]*.\.\.[[:alnum:]]*.\,/{&}/g' -e 's/\,\}/},/g'`
+Result=`echo $DashParser | sed -e 's/\[/\{/g' -e 's/\]/\}/g'`
+HostChanged=( `eval echo $Result` )
+
+### Array re-org
+ZPackages=${PackageArry[@]}
+PackageArry=($ZPackages)
+
+ZOptions=${PackageArryOption[@]}
+PackageArryOption=($ZOptions)
+
+Zset=${PackageArrySet[@]}
+PackageArrySet=($Zset)
+
+ZHosts=${HostChanged[@]}
+HostChanged=($ZHosts)
+
+### Deploy the varibles
+ZPackages=${PackageArry[@]}
+
+ZOptions=${PackageArryOption[@]}
+Zset=${PackageArrySet[@]}
+ZHosts=${HostChanged[@]}
+
+### Alias for existed fuction
+ProcessPkg=$ZPackages
+ProcessPkgNum=${#PackageArry[@]}
+
+#zinst i vipctl -stable  -same -oldset
+PureOption=`echo $ZOptions | sed -e 's/  / /g' -e 's/-stable//g' -e 's/-oldset//g' -e 's/ //g'`
+Old_set_checker=`echo $ZOptions | sed -e 's/  / /g' -e 's/-stable//g' -e 's/-same//g' -e 's/ //g'`
+Allcommand="$CommandX $ZPackages $ZOptions $Zset"
+
+############################  zinst parsing engine end ##################################
+#########################################################################################
