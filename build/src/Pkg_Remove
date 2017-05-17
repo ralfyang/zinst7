@@ -24,7 +24,6 @@ ProcessPkgNum=${#ProcessPkg[@]}
 				Pkg_list=${ProcessPkg[$Counter]}
 				ZinstOrgName=`echo $Pkg_list| awk -F "-" '{print $1}'`
 				Package_rc=`ls $ZinstDIRs |egrep "^$ZinstOrgName$"`
-echo "YAYAYAYAY----------------------------YAYAY $Pkg_list"
 					if [[ $ZinstOrgName != $Package_rc ]]
 					then
 						echo "  "
