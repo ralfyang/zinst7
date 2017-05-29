@@ -3,10 +3,11 @@
 
 ## Need a $1 parameter from command-line #!/ for test
 OS_name=$1
-## chech which command & install
-check_which=`which 2> /tmp/chk_req.out`
 
-        if [[ `(grep "not found" /tmp/chk_req.out )` != ""  ]] ; then
+sudo_base="sudo"			#!/ for test
+## chech which command & install
+which 2> /tmp/chk_req.out
+        if [[ $(grep "not found" /tmp/chk_req.out ) != ""  ]] ; then
 		case $OS_name in
 			RHEL*)
 				$sudo_base yum install which -y ;;

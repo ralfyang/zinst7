@@ -3,31 +3,36 @@
 
 ## Need  4 parameter from command-line  as below #!/ for test
 ## Cront_Command cront -u root -l  #!/ for test
+sudo_base="sudo"                #!/ for test
+WhoStamps="tester"              #!/ for test
+History_LOG="/tmp/hist"         #!/ for test
+
 ZPackages=$3 #!/ for user insert test
 Command_p="+ Crontab - Edit"
 	case "$2" in
 	-l)
 		crontab -l ;;
 	-e)
-		crontab -e 
-		echo -e "`date +%Y.%m.%d_%T`\t $WhoStamps : $Command_p" >> $History_LOG ;;
+		crontab -e
+		echo -e "$(date +%Y.%m.%d_%T)\t $WhoStamps : $Command_p" >> $History_LOG ;;
 	-u)
-	case "$4" in
-		-l)
-			$sudo_base crontab -u $ZPackages -l ;;
-		-e)
-			$sudo_base crontab -u $ZPackages
-			echo -e "`date +%Y.%m.%d_%T`\t $WhoStamps : $Command_p -u $ZPackages " >> $History_LOG ;;
-		*)
-			echo " - Please insert an option as you need to change correctly - "
-			echo " ex) 'zinst crontab -e' to edit crontab"
-			echo " ex) 'zinst crontab -u root -l' to listing the crontab of the root user"
+		case "$4" in
+			 -l)
+				$sudo_base crontab -u $ZPackages -l ;;
+		        -e)
+				$sudo_base crontab -u $ZPackages
+				echo -e "$(date +%Y.%m.%d_%T)\t $WhoStamps : $Command_p -u $ZPackages " >> $History_LOG ;;
+		        *)
+				echo " - Please insert an option as you need to change correctly - "
+				echo " ex) 'zinst crontab -e' to edit crontab"
+				echo " ex) 'zinst crontab -u root -l' to listing the crontab of the root user"
+			;;
+		esac
 		;;
-	esac
-	;;
+
 	*)
 		echo " - Please insert an option as you need to change correctly - "
-		echo " ex) 'zinst crontab -e' to edit crontab"
+		echo " ex) 'zinst crontab -e' to edit crontab"	
 		echo " ex) 'zinst crontab -u root -l' to listing the crontab of the root user"
 	;;
 	esac
