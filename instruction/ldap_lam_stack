@@ -1,0 +1,2 @@
+zinst i ldap_account_manager-0.0.2.zinst nginx_server-1.10.2.zinst nginx_server_conf_php-0.0.1.zinst  openldap_clients-0.0.1.zinst openldap_servers-0.0.1.zinst php_server-5.4.16.zinst php_fpm-5.4.16.zinst php_ldap-5.4.16.zinst
+
