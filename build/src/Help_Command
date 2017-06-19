@@ -49,6 +49,7 @@ echo "--------------------------------------------------------------------------
 echo "		 history	[Number of Range] "
 echo "...................................................................................................... "
 echo "		 -pass		Option for Multi-host password automation"
+echo "		 -p [port]	Option for ssh port change as you need"
 echo "		 self-config	ip=x.x.x.x host=xxx.xxx.xxx dir=xxx"
 echo "		 self-update			 "
 echo "		 -version			 "

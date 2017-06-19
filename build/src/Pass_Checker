@@ -1,4 +1,8 @@
 #!/bin/bash       
+
+## Test variable
+Check_Multi_pw="OK" #!/ for test
+
  if [[ $Check_Multi_pw != "OK" ]]; then
                 :
         else
@@ -11,3 +15,4 @@
                                 Comm_sshpass="sshpass -p $Zinst_PASSWD"
                         fi
         fi
+echo "Comm_sshpass = $Comm_sshpass" #!/ for test

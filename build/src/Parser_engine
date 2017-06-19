@@ -10,6 +10,11 @@ Check_Multi_pass=`echo "$PackageAll" |grep " \-pass"`
 		PackageAll=`echo "$PackageAll" | sed -e 's/ -pass/ /g'` 
 	fi
 
+Check_ssh_port=`echo "$PackageAll" |egrep " \-p [[:digit:]]* "`
+	if [[ $Check_ssh_port != "" ]]; then
+		ssh_port=`echo $PackageAll | awk -F ' -p ' '{print $2}'| awk  -F ' ' '{print $1}'`
+		PackageAll=`echo "$PackageAll" | sed -e 's/ \-p [[:digit:]]* / /g'` 
+	fi
 
 ### Parsing for Host list
 HostCheck=`echo "$PackageAll" |grep " \-h \| \-H "`
@@ -181,3 +186,13 @@ Allcommand="$CommandX $ZPackages $ZOptions $Zset"
 
 ############################  zinst parsing engine end ##################################
 #########################################################################################
+
+
+
+## Test Output only for TDD
+echo "ssh_port = $ssh_port"		#!/ test
+echo "All = $Allcommand"		#!/ test
+echo "Zset = $Zset"			#!/ test
+echo "ProcessPkg = $ProcessPkg"		#!/ test
+
+

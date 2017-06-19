@@ -9,6 +9,7 @@ ROWW="============================================================="
 
 source ./conf/zinst.conf
 
+ssh_port="22"
 ### Exception for Docker user
 ### Docker user can changes the hosts-file to the other hosts-file  as below solution
 ## RUN cp /etc/hosts /etc/hostsa
@@ -17,7 +18,7 @@ source ./conf/zinst.conf
 ## ENV LD_LIBRARY_PATH /lib-override
 
 ## Base information
-VERSION=7.0.3
+VERSION=7.0.4
 zinst_group="wheel"
 sudo_base="sudo"
 zinst_log="/dev/null"
@@ -172,7 +173,7 @@ PrintCheck(){
 									echo " =============  $PartedSource File not exist ============="
 									exit 0;
 								fi
-							$Comm_sshpass scp $PartedSource $TartgetHost:$TargetDir	
+							$Comm_sshpass scp -P $ssh_port $PartedSource $TartgetHost:$TargetDir	
 							let Scount=Scount+1
 						done
 					let Hcount=Hcount+1
@@ -180,7 +181,7 @@ PrintCheck(){
 					Command_p="> mcp"
 					SourceFull=(`echo "$Source"`)
 					IPaddr=`/sbin/ifconfig |grep " addr:" |grep Bcast |head -1 | awk '{print $2}'|awk  -F ':' '{print $2}'`
-					$Comm_sshpass ssh -oStrictHostKeyChecking=no $TartgetHost "echo -e \"`date +%Y.%m.%d_%T`\t $WhoStamps : $Command_p - From $IPaddr:  ${SourceFull[@]} -> $TargetDir \" >> $History_LOG"
+					$Comm_sshpass ssh -p $ssh_port -oStrictHostKeyChecking=no $TartgetHost "echo -e \"`date +%Y.%m.%d_%T`\t $WhoStamps : $Command_p - From $IPaddr:  ${SourceFull[@]} -> $TargetDir \" >> $History_LOG"
 				done
 		else
 			echo "$ROWW"
@@ -202,13 +203,13 @@ PrintCheck(){
 					echo ""
 					echo "[:: $TartgetHost ::]"		
 					Scount=1
-					$Comm_sshpass scp $ZPackages $TartgetHost:~/ 2> $zinst_log
+					$Comm_sshpass scp -P $ssh_port $ZPackages $TartgetHost:~/ 2> $zinst_log
 					let Hcount=Hcount+1
 					Localhost=$HOSTNAME
 					Command_p="> Sent a sync file"
 					SourceFull=(`echo "$Source"`)
 					IPaddr=`/sbin/ifconfig |grep " addr:" |grep Bcast |head -1 | awk '{print $2}'|awk  -F ':' '{print $2}'`
-					$Comm_sshpass ssh -oStrictHostKeyChecking=no $TartgetHost "echo -e \"`date +%Y.%m.%d_%T`\t $WhoStamps : $Command_p - From $IPaddr:  $SourceFull -> $TargetDir \" >> $History_LOG"
+					$Comm_sshpass ssh -p $ssh_port -oStrictHostKeyChecking=no $TartgetHost "echo -e \"`date +%Y.%m.%d_%T`\t $WhoStamps : $Command_p - From $IPaddr:  $SourceFull -> $TargetDir \" >> $History_LOG"
 				done
 		fi
 	fi
@@ -246,7 +247,7 @@ PrintCheck(){
                     echo ""
                     echo "[:: $TartgetHost  ::]"        
 					TartgetHost=`echo $ZHosts | awk '{print $'$Hcount'}'`
-					$Comm_sshpass ssh -T -oStrictHostKeyChecking=no $UserID@$TartgetHost <<EOF1
+					$Comm_sshpass ssh -p $ssh_port -T -oStrictHostKeyChecking=no $UserID@$TartgetHost <<EOF1
 						if [ ! -e "~/.ssh" ]; then
 							mkdir ~/.ssh  2> /dev/null
 						fi
@@ -258,7 +259,7 @@ EOF1
 					Command_p="> Key Deploy"
 					SourceFull=(`echo "$Source"`)
 					IPaddr=`/sbin/ifconfig |grep " addr:" |grep Bcast |head -1 | awk '{print $2}'|awk  -F ':' '{print $2}'`
-					$Comm_sshpass ssh -oStrictHostKeyChecking=no $TartgetHost "echo -e \"`date +%Y.%m.%d_%T`\t $WhoStamps : $Command_p - From $IPaddr:  ${SourceFull[@]} -> $TargetDir \" >> $History_LOG"
+					$Comm_sshpass ssh -p $ssh_port -oStrictHostKeyChecking=no $TartgetHost "echo -e \"`date +%Y.%m.%d_%T`\t $WhoStamps : $Command_p - From $IPaddr:  ${SourceFull[@]} -> $TargetDir \" >> $History_LOG"
 				done
 		else
 			echo "$ROWW"
@@ -283,7 +284,7 @@ RotaBeacon=0
 			do
 				HostF=$WhoStamp@${HostChanged[$Count]}
 				## ssh connection check
-				$Comm_sshpass ssh -oStrictHostKeyChecking=no $HostF "grep ^VERSION /usr/bin/zinst" > $ZinstBaseRoot/vault/Source/ssh_conn_test.log 2>&1
+				$Comm_sshpass ssh -p $ssh_port -oStrictHostKeyChecking=no $HostF "grep ^VERSION /usr/bin/zinst" > $ZinstBaseRoot/vault/Source/ssh_conn_test.log 2>&1
 				CheckConnection=`$sudo_base cat $ZinstBaseRoot/vault/Source/ssh_conn_test.log |grep "No route\|not known\|Connection refused"`
 					if [[ $CheckConnection != "" ]]
 					then
@@ -300,10 +301,10 @@ RotaBeacon=0
 								zinst_checkLoc=`$sudo_base cat /usr/bin/zinst 2> $zinst_log |grep ^VERSION | sed -e 's/VERSION=//g'`
 									if [[ $(version_redefine "$zinst_checkDes") < $(version_redefine "$zinst_checkLoc") ]];
 									then
-										$Comm_sshpass scp /usr/bin/zinst $HostF:/usr/bin
+										$Comm_sshpass scp -P $ssh_port /usr/bin/zinst $HostF:/usr/bin
 									fi
 							else
-								$Comm_sshpass scp /usr/bin/zinst $HostF:/usr/bin/ 2> $zinst_log
+								$Comm_sshpass scp -P $ssh_port /usr/bin/zinst $HostF:/usr/bin/ 2> $zinst_log
 							fi
 
 						#### Check SSH command ########
@@ -316,7 +317,7 @@ RotaBeacon=0
 						CheckDesDIR=`$sudo_base grep " cannot access " $ZinstBaseRoot/vault/Source/ssh_conn_test.log`
 							if [[ $CommandX != "" ]]
 							then		
-	        						$Comm_sshpass ssh -oStrictHostKeyChecking=no -t $HostF "$sudo_base mkdir -p $ZinstBaseRoot/vault/Source;sudo chgrp -R $zinst_group $ZinstBaseRoot/vault" 2> $zinst_log
+	        						$Comm_sshpass ssh -p $ssh_port -oStrictHostKeyChecking=no -t $HostF "$sudo_base mkdir -p $ZinstBaseRoot/vault/Source;sudo chgrp -R $zinst_group $ZinstBaseRoot/vault" 2> $zinst_log
 							fi
 
         					echo ""
@@ -337,7 +338,7 @@ RotaBeacon=0
 
 									if [[ $LocalPkg_chk != "" ]]
 									then
-										$Comm_sshpass scp $LocalRealPkg $HostF:$ZinstSourceDir/
+										$Comm_sshpass scp -P $ssh_port $LocalRealPkg $HostF:$ZinstSourceDir/
 									fi
 
 								let CountSub=CountSub+1
@@ -355,7 +356,7 @@ RotaBeacon=0
 						MultiCheck=`echo $ZOptions |grep -e "-multi"`
 							if [[ $MultiCheck = "" ]]
 							then
-								$Comm_sshpass ssh -oStrictHostKeyChecking=no -t $HostF "echo [ :: $HostF :: ];cd $ZinstSourceDir; source /etc/profile ;$szinst $RotaCommand" 2> $zinst_log
+								$Comm_sshpass ssh -p $ssh_port -oStrictHostKeyChecking=no -t $HostF "echo [ :: $HostF :: ];cd $ZinstSourceDir; source /etc/profile ;$szinst $RotaCommand" 2> $zinst_log
 								IPaddr=`/sbin/ifconfig |grep " addr:" |grep Bcast |head -1 | awk '{print $2}'|awk  -F ':' '{print $2}'`
 									if [[ $szinst = "" ]];then
 										DestStamp="> SSH -"
@@ -363,9 +364,9 @@ RotaBeacon=0
 										DestStamp=" L"
 									fi
 
- 							    $Comm_sshpass ssh -oStrictHostKeyChecking=no -t $HostF "echo -e \"`date +%Y.%m.%d_%T`\t $WhoStamps : $DestStamp From $IPaddr: $szinst $RotaCommand\" >> $History_LOG" 
+ 							    $Comm_sshpass ssh -p $ssh_port -oStrictHostKeyChecking=no -t $HostF "echo -e \"`date +%Y.%m.%d_%T`\t $WhoStamps : $DestStamp From $IPaddr: $szinst $RotaCommand\" >> $History_LOG" 
 							else
-								$Comm_sshpass ssh -oStrictHostKeyChecking=no -t $HostF "echo [ :: $HostF :: ];cd $ZinstSourceDir; source /etc/profile ;$szinst $RotaCommand" & 
+								$Comm_sshpass ssh -p $ssh_port -oStrictHostKeyChecking=no -t $HostF "echo [ :: $HostF :: ];cd $ZinstSourceDir; source /etc/profile ;$szinst $RotaCommand" & 
 							fi
 
 					fi
