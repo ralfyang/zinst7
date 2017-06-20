@@ -55,7 +55,6 @@
 │       ├── version_redefine
 │       ├── Zinst_SelfConfig
 │       └── Zinst_Selfupdate
-
 ├── dist					- Dir for Zinst package server
 │   └── rhel7					- For RHEL 7 version supports
 │       ├── git-0.0.1.zinst			- Git package for internal use
