@@ -10,7 +10,7 @@ sudo rm -Rf ./RootDirectorY
 
 cp ./base_package/* ./
 zinst i server_default_setting-1.3.2.zinst -same
-zinst i zinst_simple_server-1.0.5.zinst -same
+zinst i zinst_simple_server-1.0.6.zinst -same
 
 sudo cp -Rfv ./dist/rhel7/* /data/dist/rhel7/
 sudo cp ./zinst /data/dist/
