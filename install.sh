@@ -9,8 +9,8 @@ sudo zinst self-config ip=$BaseIP host=$BaseIP dir=/data
 sudo rm -Rf ./RootDirectorY
 
 cp ./base_package/* ./
-zinst i server_default_setting -stable
-zinst i zinst_simple_server-1.0.4.zinst -same
+zinst i server_default_setting-1.3.2.zinst -same
+zinst i zinst_simple_server-1.0.7.zinst -same
 
 sudo cp -Rfv ./dist/rhel7/* /data/dist/rhel7/
 sudo cp ./zinst /data/dist/

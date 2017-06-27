@@ -15,12 +15,14 @@
 │   ├── zinst_conf
 │   └── zinst_new_20170413
 ├── base_package				- Zinst base packages for distribution server
-│   ├── server_default_setting-1.3.0.zinst
-│   └── zinst_simple_server-1.0.1.zinst
+│   ├── server_default_setting-1.3.2.zinst
+│   └── zinst_simple_server-1.0.4.zinst
 ├── build					- Build base dir
 │   ├── build.sh
+│   ├── conf     - Base configuration of zinst
+│   │   └── zinst.conf
 │   ├── main					- main Source for Zinst body
-│   └── src					- Source dir for each Function
+│   └── src      - Source dir for each Function
 │       ├── Check_command_install
 │       ├── Cront_Command
 │       ├── Daemon_Control
@@ -30,9 +32,11 @@
 │       ├── Help_Detail
 │       ├── History
 │       ├── hosts_redefine
+│       ├── Log_History_dir
 │       ├── OS_Checker
 │       ├── Package_Array_Sort
 │       ├── Package_Parse_Check
+│       ├── Parser_engine
 │       ├── Pass_Checker
 │       ├── Pkg_Find
 │       ├── Pkg_Getset
@@ -61,7 +65,10 @@
 │       ├── tree-0.0.1.zinst			- tree pacakge by zinst
 │       ├── zinst_making_tool-1.2.8.zinst	- zinst package maker
 │       └── zinst_simple_server-1.0.1.zinst	- zinst distribution server
-├── install.sh					- INSTALL command for zinst 1st
+├── install.sh					          - INSTALL command for zinst 1st
+├── install_with_gitrepo.sh  - INSTALL command for zinst git-repo(for test install)
+├── instruction              - Package set for service stack
+│   └── ldap_lam_stack       - LDAP Account Manager with LDAP install stack
 ├── README.md
 └── zinst					- zinst command
 ```
