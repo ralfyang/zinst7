@@ -28,7 +28,7 @@ ssh_port="22"
 ## ENV LD_LIBRARY_PATH /lib-override
 
 ## Base information
-VERSION=7.0.4
+VERSION=7.0.5
 zinst_group="wheel"
 sudo_base="sudo"
 zinst_log="/dev/null"
@@ -328,6 +328,9 @@ rm -f $Print_list
 
 ## Parsing!!!   importatant area
 Parser_engine(){
+
+
+
 PackageAll=$@
 #########################################################################################
 ############################ zinst parsing engine start #################################
