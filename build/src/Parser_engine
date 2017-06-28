@@ -1,4 +1,12 @@
 #!/bin/bash 
+
+Pass_Checker(){			#!/ Test code
+source ./Pass_Checker		#!/ Test code
+}				#!/ Test code
+zinst_log="/tmp/log.tmp"	#!/ Test code
+ZinstDIRs="/data/zinst"		#!/ Test code
+
+
 PackageAll=$@
 #########################################################################################
 ############################ zinst parsing engine start #################################
@@ -194,5 +202,6 @@ echo "ssh_port = $ssh_port"		#!/ test
 echo "All = $Allcommand"		#!/ test
 echo "Zset = $Zset"			#!/ test
 echo "ProcessPkg = $ProcessPkg"		#!/ test
+echo "HostArry = ${HostArry[@]}"	#!/ test
 
 
