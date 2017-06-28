@@ -13,6 +13,10 @@ BaseIP=`ip a s eth0 |grep "inet " | awk '{print $2}' | awk -F'/' '{print $1}'`
 ## Old file clean
 sudo rm /usr/bin/zinst 2> /dev/nul
 
+## Require package install
+sudo yum install bc tar -y
+
+
 ## New file copy
 sudo cp ./zinst /usr/bin/zinst
 
