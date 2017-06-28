@@ -706,10 +706,17 @@ EOF1
 	fi
 
 
+
+Re_org_engine(){
+
+
+
+
+
 #########################################################################################
 ############################# zinst re-org engine start #################################
 ################################# Hostlist checker ######################################
-RotaCommand=$Allcommand
+RotaCommand=$@
 szinst="zinst"
 RotaBeacon=0
 	if [[ $ZHosts != "" ]]
@@ -810,6 +817,9 @@ RotaBeacon=0
 			done
 		exit 0;
 	fi
+}
+Re_org_engine $Allcommand
+
 
 Package_Array_Sort(){
 BoxPkg=$ZPackages
