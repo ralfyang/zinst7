@@ -439,6 +439,10 @@ Pkg_Getset(){
 		Daemon_Control $*	;;
 	off)
 		Daemon_Control $*	;;
+        enable)
+                Daemon_Control $*       ;;
+        disable)
+                Daemon_Control $*       ;;
 	his*)
 		History	;;
 	self-up*)
