@@ -2275,7 +2275,7 @@ check_dist_url=`grep "couldn't connect" /tmp/dist_check.tmp`
 		exit 0;
 	fi
 
-$sudo_base rm -f zinst
+$sudo_base mv -f zinst zinst_oldback
 echo  " Downloading..."
 curl -w ' [:: %{size_download} byte has been downloaded ::]\n' -L -# $Dist_server/zinst -o ./zinst;
 mv zinst zinst_tmp
